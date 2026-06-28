@@ -1,0 +1,128 @@
+---
+title: "Verify Ozow Webhook Notifications Securely"
+sidebarTitle: "Webhooks"
+description: "Ozow sends webhook POST notifications to your server when transactions complete, are cancelled, or expire. Learn how to receive and verify them."
+---
+
+Every time a customer completes, cancels, or times out on a payment, Ozow sends an HTTP POST notification — a webhook — directly to a server endpoint you specify. Unlike the browser redirect that returns the customer to your site, this server-to-server call is unaffected by network drops, browser closures, or ad blockers, making it the most reliable signal you have that a transaction has reached its final state. Build your fulfilment logic around webhook delivery rather than redirect parameters, and you give your system a robust foundation for handling real-world payment outcomes.
+
+## What Webhooks Do
+
+Ozow fires a webhook POST request to your `NotifyUrl` endpoint at the conclusion of every payment attempt, regardless of the outcome. Your server receives a payload containing the transaction result, and you use that result to update your order management system, trigger fulfilment, or flag the order for follow-up.
+
+Webhooks fire for the following events:
+
+| Event | Description |
+|-------|-------------|
+| **Complete** | The customer completed the payment successfully. |
+| **Cancelled** | The customer cancelled the payment before completing it. |
+| **Expired** | The payment session timed out before the customer completed it. |
+| **Error** | An error occurred during the payment process. |
+| **PendingInvestigation** | The transaction requires manual review by Ozow. |
+
+## Setting Up Your Webhook Endpoint
+
+Include a `NotifyUrl` parameter in the initial payment POST request you send to Ozow. Ozow will POST the transaction result to that URL when the payment concludes.
+
+```http
+POST https://api.ozow.com/PostPaymentRequest
+Content-Type: application/x-www-form-urlencoded
+
+SiteCode=YOUR_SITE_CODE
+&CountryCode=ZA
+&CurrencyCode=ZAR
+&Amount=100.00
+&TransactionReference=ORDER-1234
+&BankReference=ORDER-1234
+&NotifyUrl=https://yoursite.com/webhooks/ozow
+&SuccessUrl=https://yoursite.com/payment/success
+&CancelUrl=https://yoursite.com/payment/cancel
+&ErrorUrl=https://yoursite.com/payment/error
+&HashCheck=YOUR_COMPUTED_HASH
+```
+
+Your webhook endpoint must:
+- Be publicly accessible over HTTPS
+- Accept HTTP POST requests
+- Return an **HTTP 200** status code promptly (within a few seconds)
+
+## Webhook Payload Fields
+
+Ozow sends the following fields in the webhook POST body:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `TransactionId` | string | Ozow's unique identifier for the transaction. |
+| `MerchantCode` | string | Your Ozow merchant code. |
+| `SiteCode` | string | The site code used for this transaction. |
+| `TransactionStatus` | string | Final status: `Complete`, `Cancelled`, `Error`, `PendingInvestigation`. |
+| `Amount` | decimal | The transaction amount. |
+| `CurrencyCode` | string | The currency of the transaction (e.g. `ZAR`). |
+| `IsTest` | boolean | `true` if the transaction was processed in staging. |
+| `StatusMessage` | string | A human-readable description of the transaction outcome. |
+| `Hash` | string | SHA-512 hash used to verify the payload's authenticity. |
+
+## Verifying the Hash
+
+Every webhook payload includes a `Hash` field. You **must** verify this hash against your Private Key before trusting or acting on any webhook. This prevents attackers from sending forged notifications to your endpoint and triggering false fulfilment.
+
+The hash is computed by concatenating specific payload fields (in the documented order) with your Private Key, converting the resulting string to lowercase, and taking its SHA-512 digest.
+
+<Warning>
+  Always verify the hash before processing a webhook. Never trust or act on a webhook payload that fails hash verification — discard it immediately and log the incident for review.
+</Warning>
+
+### Hash Verification Example
+
+```python
+import hashlib
+
+def verify_hash(payload: dict, private_key: str) -> bool:
+    """
+    Verify the Ozow webhook hash.
+
+    Concatenate key fields in the documented order, append the
+    Private Key, lowercase the entire string, then SHA-512 hash it.
+    Returns True if the computed hash matches the payload Hash field.
+    """
+    data = (
+        payload['SiteCode'] +
+        payload['TransactionId'] +
+        payload['TransactionStatus'] +
+        str(payload['Amount']) +
+        private_key
+    ).lower()
+
+    computed = hashlib.sha512(data.encode('utf-8')).hexdigest()
+    return computed == payload['Hash'].lower()
+```
+
+<Note>
+  The exact field concatenation order is defined in the Ozow API reference. Always follow the documented order precisely — even a single field out of place will produce a different hash and cause verification to fail.
+</Note>
+
+## Transaction Status Values
+
+| Status | Meaning |
+|--------|---------|
+| `Complete` | Payment was successful. Safe to fulfil the order. |
+| `Cancelled` | Customer cancelled. No funds were moved. |
+| `Error` | A processing error occurred. Check `StatusMessage` for detail. |
+| `PendingInvestigation` | Ozow is reviewing the transaction. Await a follow-up notification before fulfilling. |
+
+## Best Practices
+
+Follow these practices to build a reliable webhook handler:
+
+- **Respond with HTTP 200 immediately.** Return a `200 OK` as soon as you receive the webhook, before running any business logic. Long-running operations that delay your response can cause Ozow to treat the delivery as failed and retry.
+- **Process asynchronously.** Enqueue the payload and handle fulfilment in a background worker so your endpoint stays fast and available.
+- **Handle duplicate delivery idempotently.** Network conditions can cause Ozow to deliver the same webhook more than once. Use the `TransactionId` as an idempotency key so that processing the same notification twice doesn't result in double fulfilment.
+- **Log all incoming webhooks.** Store the raw payload before you process it — this gives you an audit trail if you need to investigate a dispute or replay a missed event.
+
+## OneAPI Webhooks
+
+If you are integrating via the OneAPI, webhook behaviour and payload structure differ slightly.
+
+<Card title="OneAPI Webhook Reference" icon="webhook" href="/api/oneapi/webhooks">
+  Learn how to receive and verify webhook notifications for OneAPI transactions.
+</Card>

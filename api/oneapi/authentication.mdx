@@ -1,0 +1,114 @@
+---
+title: "Authenticate with Ozow OneAPI using OAuth 2.0"
+sidebarTitle: "Authentication"
+description: "OneAPI uses OAuth 2.0 Client Credentials flow. Exchange your Client ID and Secret for a Bearer token, then pass it in the Authorization header."
+---
+
+OneAPI secures every request with OAuth 2.0 Client Credentials — an industry-standard, server-to-server authentication flow that never requires a user login prompt. You exchange your merchant **Client ID** and **Client Secret** for a short-lived Bearer token, then attach that token to every subsequent API call. Because tokens are scoped, you request only the permissions your integration actually needs, reducing risk if a token is ever compromised.
+
+## Get your credentials
+
+Retrieve your Client ID and Client Secret from the Ozow Dashboard after logging in as a registered merchant:
+
+- **Production dashboard:** [https://dash.ozow.com](https://dash.ozow.com)
+- **Staging dashboard:** [https://stagingdash.ozow.com](https://stagingdash.ozow.com)
+
+<Warning>
+  Never expose your `client_secret` in client-side code, mobile app binaries, or public repositories. Always request tokens from your backend server where credentials can be stored securely.
+</Warning>
+
+## Token endpoint
+
+| Environment | Token URL |
+|---|---|
+| Production | `POST https://one.ozow.com/oauth/token` |
+| Staging | `POST https://stagingone.ozow.com/oauth/token` |
+
+## Request parameters
+
+Send the following fields as `application/x-www-form-urlencoded` in the request body.
+
+<ParamField body="grant_type" type="string" required>
+  Must be `client_credentials`.
+</ParamField>
+
+<ParamField body="client_id" type="string" required>
+  Your OAuth Client ID, retrieved from the Ozow Dashboard.
+</ParamField>
+
+<ParamField body="client_secret" type="string" required>
+  Your OAuth Client Secret, retrieved from the Ozow Dashboard. Keep this value server-side at all times.
+</ParamField>
+
+<ParamField body="scope" type="string" required>
+  A space-separated list of permission scopes to grant this token. See the scopes table below for available values (e.g., `payment refund`).
+</ParamField>
+
+## Available scopes
+
+| Scope | Permission granted |
+|---|---|
+| `payment` | Initiate and manage payments |
+| `refund` | Process refunds against completed payments |
+| `settlements` | Access and query settlement data |
+| `verification` | Perform bank account and CDV verification |
+
+<Tip>
+  Request only the scopes your integration needs. Following the principle of least privilege limits the impact of a leaked token and keeps your security audit surface small.
+</Tip>
+
+## Request example
+
+```bash
+curl -X POST https://one.ozow.com/oauth/token \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'grant_type=client_credentials' \
+  -d 'client_id=your-client-id' \
+  -d 'client_secret=your-client-secret' \
+  -d 'scope=payment refund'
+```
+
+## Token response
+
+```json
+{
+  "access_token": "eyJhbGciOiJSUzI1NiIs...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "scope": "payment refund"
+}
+```
+
+<ResponseField name="access_token" type="string">
+  The Bearer token to attach to all subsequent OneAPI requests.
+</ResponseField>
+
+<ResponseField name="token_type" type="string">
+  Always `Bearer`.
+</ResponseField>
+
+<ResponseField name="expires_in" type="integer">
+  Token lifetime in seconds. Tokens expire after **3600 seconds (1 hour)**. Request a new token before or immediately after expiry.
+</ResponseField>
+
+<ResponseField name="scope" type="string">
+  The space-separated scopes granted to this token. Confirm these match what you requested.
+</ResponseField>
+
+## Use the token
+
+Attach the access token to every OneAPI request in the `Authorization` header:
+
+```
+Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
+```
+
+## Idempotency header
+
+On all POST requests, include an `Idempotency-Key` header set to a unique UUID. OneAPI uses this key to detect retries and return the original response rather than processing the request a second time, preventing duplicate charges or refunds.
+
+```
+Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+```
+
+Generate a fresh UUID for each new operation. Reuse the same UUID only when retrying a failed request for the same operation.

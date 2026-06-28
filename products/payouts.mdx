@@ -1,0 +1,105 @@
+---
+title: "Ozow Payouts: Automated Real-Time Bank Transfers"
+sidebarTitle: "Payouts"
+description: "Send automated payouts to any South African bank account using Ozow's Real-Time Clearing API — 24/7, with funds reflecting in minutes."
+---
+
+Ozow Payouts removes the manual effort from disbursing funds to your customers. Powered by Real-Time Clearing (RTC), a single API call triggers an automated payout that reflects in the recipient's bank account within minutes — any time of day, any day of the week. Whether you're processing a handful of refund withdrawals or thousands of daily disbursements, Ozow Payouts scales without adding staff or admin overhead. Automated notifications keep you informed the moment each bank confirms an outcome, so your reconciliation stays accurate in real time.
+
+## Key Benefits
+
+<CardGroup cols={2}>
+  <Card title="24/7 Operation" icon="clock">
+    Initiate payouts at any hour, every day of the year. Your customers aren't limited to business-hours banking windows.
+  </Card>
+  <Card title="Unlimited Recipients" icon="users">
+    Pay any number of South African bank accounts in a single batch or as individual requests — no volume caps.
+  </Card>
+  <Card title="Single API Call" icon="bolt">
+    Each payout requires just one API call. The integration is straightforward and designed to fit your existing disbursement workflow.
+  </Card>
+  <Card title="Automated Notifications" icon="bell">
+    Ozow sends you an automated notification as soon as the bank returns an outcome, so your records update without manual polling.
+  </Card>
+</CardGroup>
+
+## Account Verification (CDV)
+
+Before a payout is submitted, Ozow runs a **Check Digit Verification (CDV)** check on every recipient account. CDV validates the combination of the six-digit bank branch code and the account number against each bank's check-digit rules.
+
+<Info>
+  CDV confirms that the branch code and account number are structurally valid — it does **not** verify that the account is currently open or active. Use it as a first-pass filter to catch typos before you submit a payout.
+</Info>
+
+## Payout Limits and Reflection Times
+
+Ozow offers two payout types: **real-time** and **standard**. The right choice depends on urgency, amount, and timing.
+
+<Tabs>
+  <Tab title="Real-Time Payouts">
+    Real-time payouts use RTC rails and reflect in the recipient's account within minutes.
+
+    | Condition | Limit per Payout |
+    |---|---|
+    | Weekdays during core business hours | R5,000,000 |
+    | Weekends or outside core business hours | R250,000 |
+
+    <Warning>
+      Even though funds may reach the recipient within minutes, it can take **up to 24 hours** for Ozow to receive the bank's confirmation of payout. Your dashboard and webhook notification will reflect this confirmation when it arrives.
+    </Warning>
+  </Tab>
+  <Tab title="Standard Payouts">
+    Standard payouts are processed in batches through the ACB (Automated Clearing Bureau) system and typically reflect the next business day.
+
+    Standard payouts are suitable for non-urgent disbursements where same-day reflection is not required.
+  </Tab>
+</Tabs>
+
+## RTC Processing Schedule
+
+RTC (Real-Time Clearing) operates on the following schedule. Payouts submitted outside these windows are queued and processed when the next window opens.
+
+| Day | Processing Window |
+|---|---|
+| Monday – Friday | 03:00 – 18:00 SAST |
+| Saturday | 03:00 – 13:00 SAST |
+| Sunday | No processing |
+| Public Holidays | No processing |
+
+<Note>
+  Payouts are drawn from your **Ozow float balance**. Ensure your float is sufficiently funded before initiating a payout run. You can also use your float balance for refunds.
+</Note>
+
+## Testing
+
+Before going live, test all payout scenarios in the Ozow **Staging environment** using both the Mock API and the Actual API.
+
+<AccordionGroup>
+  <Accordion title="Mock API" icon="vial">
+    Use the Mock API to simulate payout requests and responses without touching real banking infrastructure. Ideal for initial integration and error-handling tests.
+  </Accordion>
+  <Accordion title="Actual API in Staging" icon="flask">
+    The Actual API in Staging processes real standard payouts through the test environment. Note that **only standard payouts** are available in Staging — real-time payout testing is not supported.
+
+    Submit your test payouts **before 4:00 PM CAT** to meet the batch processing cut-off. Processed payouts are typically completed by **9:00 AM the following business day**.
+  </Accordion>
+</AccordionGroup>
+
+## Float Management
+
+All payouts are debited from your Ozow float. Keep your float funded to avoid payout failures. You can view your current float balance at any time from the Merchant Dashboard.
+
+<Tip>
+  Set up low-balance alerts in the Merchant Dashboard so you're notified before your float drops below a threshold that could interrupt payout operations.
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Payouts API Docs" icon="code" href="/api/payouts/overview">
+    Explore the full Payouts API reference, including request schemas, authentication, and response codes.
+  </Card>
+  <Card title="Frequently Asked Questions" icon="circle-question" href="/help/faqs">
+    Find answers to common questions about payout limits, processing times, and float management.
+  </Card>
+</CardGroup>

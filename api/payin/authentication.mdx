@@ -1,0 +1,75 @@
+---
+title: "Authenticate Pay-in API Requests with Ozow"
+sidebarTitle: "Authentication"
+description: "Ozow Pay-in API uses an API Key plus a SHA-512 request hash computed from your Private Key. Learn how to generate and pass credentials correctly."
+---
+
+Every Pay-in API request you send to Ozow must carry two credentials: an **API Key** that identifies your merchant account, and a **HashCheck** signature that proves the request fields haven't been tampered with in transit. You retrieve both the API Key and the Private Key — which is used to compute the hash — from your Merchant Dashboard. The Private Key itself never travels in the request body; only the resulting hash does. This two-factor approach means that even if a request is intercepted, an attacker cannot forge a valid payment without your Private Key.
+
+## Credentials
+
+| Credential | Where to use it | Where to find it |
+|------------|-----------------|------------------|
+| **API Key** | `ApiKey` field in the POST request body | Merchant Dashboard → Merchant Details |
+| **Private Key** | Used locally to compute `HashCheck` — never sent in the request | Merchant Dashboard → Merchant Details |
+
+**Staging Dashboard:** [https://stagingdash.ozow.com/MerchantAdmin/Merchant/Details](https://stagingdash.ozow.com/MerchantAdmin/Merchant/Details)
+
+**Live Dashboard:** [https://dash.ozow.com/MerchantAdmin/Merchant/Details](https://dash.ozow.com/MerchantAdmin/Merchant/Details)
+
+<Warning>
+  Never expose your Private Key in client-side code, browser JavaScript, or mobile app binaries. Always compute the SHA-512 hash on your server and send only the resulting `HashCheck` value to the client or directly to Ozow.
+</Warning>
+
+## Computing the HashCheck
+
+To produce the `HashCheck` value, concatenate the following fields in exactly this order, append your Private Key, lowercase the entire string, then compute a SHA-512 hash of the UTF-8 encoded result.
+
+### Field concatenation order for PostPaymentRequest
+
+| Position | Field | Notes |
+|----------|-------|-------|
+| 1 | `SiteCode` | Required |
+| 2 | `CountryCode` | Required |
+| 3 | `CurrencyCode` | Required |
+| 4 | `Amount` | Required |
+| 5 | `TransactionReference` | Required |
+| 6 | `BankReference` | Required |
+| 7 | `CancelUrl` | Use empty string `""` if not provided |
+| 8 | `ErrorUrl` | Use empty string `""` if not provided |
+| 9 | `SuccessUrl` | Use empty string `""` if not provided |
+| 10 | `NotifyUrl` | Use empty string `""` if not provided |
+| 11 | `IsTest` | Required — `"true"` or `"false"` |
+| 12 | `Private Key` | Your secret Private Key |
+
+### Python example
+
+```python
+import hashlib
+
+def compute_hash(fields: dict, private_key: str) -> str:
+    data = (
+        fields['SiteCode'] +
+        fields['CountryCode'] +
+        fields['CurrencyCode'] +
+        fields['Amount'] +
+        fields['TransactionReference'] +
+        fields['BankReference'] +
+        fields.get('CancelUrl', '') +
+        fields.get('ErrorUrl', '') +
+        fields.get('SuccessUrl', '') +
+        fields.get('NotifyUrl', '') +
+        fields['IsTest'] +
+        private_key
+    ).lower()
+    return hashlib.sha512(data.encode('utf-8')).hexdigest()
+```
+
+Pass the return value of this function as the `HashCheck` field in your POST request body.
+
+## Common authentication errors
+
+| HTTP Status | Cause | Fix |
+|-------------|-------|-----|
+| `400 Bad Request` | `HashCheck` does not match the expected hash | Verify field order, check for extra whitespace, and confirm you are lowercasing the full concatenated string before hashing |
+| `401 Unauthorized` | `ApiKey` is missing, invalid, or belongs to a different environment | Use the correct API Key from your staging or production dashboard |

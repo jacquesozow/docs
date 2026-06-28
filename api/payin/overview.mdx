@@ -1,0 +1,54 @@
+---
+title: "Pay-in API Overview: Accept Payments with Ozow"
+sidebarTitle: "Overview"
+description: "The Ozow Pay-in API lets you initiate payment requests, redirect customers to the Ozow gateway, and receive transaction outcomes via response and webhooks."
+---
+
+The Ozow Pay-in API gives you a straightforward way to accept EFT payments from South African customers. You post a payment request to Ozow, redirect your customer to the secure Ozow payment gateway where they complete the transaction through their bank, and then receive the outcome both as a redirect back to your site and as a server-to-server webhook notification. The entire flow is designed around three clear steps that you can wire into any server-side stack with minimal ceremony.
+
+## How it works
+
+The Pay-in API follows a three-step flow:
+
+1. **POST the payment** — Your server sends a signed payment request to `/PostPaymentRequest`. Ozow validates the request and returns a redirect URL.
+2. **Customer completes payment** — You redirect your customer to that URL, where they authenticate with their bank and approve the transfer.
+3. **Receive the outcome** — Ozow redirects the customer back to your `SuccessUrl`, `CancelUrl`, or `ErrorUrl` with transaction details in the query string, and simultaneously POSTs a notification to your `NotifyUrl` webhook.
+
+## Base URLs
+
+| Environment | Base URL |
+|-------------|----------|
+| Staging     | `https://stagingapi.ozow.com` |
+| Production  | `https://api.ozow.com` |
+
+Always build and test against the staging environment first, then switch base URL and credentials when you go live.
+
+## Authentication at a glance
+
+Every request requires two credentials you retrieve from your Merchant Dashboard:
+
+- **API Key** — passed in the request body as the `ApiKey` field.
+- **Hash** — a SHA-512 signature computed from your request fields and your Private Key, passed as `HashCheck`. Your Private Key is never sent over the wire.
+
+See the [Authentication](/api/payin/authentication) page for the full field order and a code example.
+
+<Note>
+  For new integrations, consider the [OneAPI](/api/oneapi/overview) instead. It offers OAuth 2.0 authentication, built-in idempotency, and broader payment method support beyond EFT.
+</Note>
+
+## Explore this section
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/api/payin/authentication">
+    Learn how to generate your API Key and SHA-512 hash signature to authenticate every request.
+  </Card>
+  <Card title="Post Payment" icon="paper-plane" href="/api/payin/post-payment">
+    POST /PostPaymentRequest to initiate a payment and get the redirect URL for your customer.
+  </Card>
+  <Card title="Payment Response" icon="arrow-turn-down-left" href="/api/payin/payment-response">
+    Understand the redirect and webhook response fields, and verify the response hash.
+  </Card>
+  <Card title="Transaction Status" icon="magnifying-glass" href="/api/payin/transaction-status">
+    GET /GetTransaction to query real-time payment status before fulfilling an order.
+  </Card>
+</CardGroup>

@@ -1,0 +1,61 @@
+---
+title: "Ozow eCommerce Plugins and Platform Integrations"
+sidebarTitle: "Plugins"
+description: "Use Ozow's eCommerce plugins to add payments to your online store without custom API code. Available for WooCommerce, Shopify, and other platforms."
+---
+
+If you run your store on a mainstream eCommerce platform, you can add Ozow payments without writing custom API code. Ozow and its integration partners provide ready-made plugins that handle the payment flow on your behalf — you install the plugin, enter your API credentials from the Merchant Dashboard, and your customers can pay with Ozow straight away. For platforms that don't have a dedicated plugin, Ozow's Pay-in API gives you the full flexibility to build a bespoke integration from scratch.
+
+## Supported Platforms
+
+Ozow plugins are available through our partner ecosystem for the most widely used eCommerce platforms in South Africa and beyond. The following platforms are supported:
+
+<CardGroup cols={2}>
+  <Card title="WooCommerce" icon="wordpress">
+    The most popular WordPress eCommerce plugin. Install the Ozow WooCommerce extension to accept payments directly in your WooCommerce checkout.
+  </Card>
+  <Card title="Shopify" icon="shopify">
+    Add Ozow as a payment gateway in your Shopify store through the Shopify payment provider settings.
+  </Card>
+  <Card title="Magento" icon="box">
+    Integrate Ozow into your Magento 2 store using the official Ozow payment module available through our partner ecosystem.
+  </Card>
+  <Card title="PrestaShop" icon="store">
+    Use the Ozow PrestaShop module to enable instant EFT payments at checkout for your PrestaShop storefront.
+  </Card>
+  <Card title="OpenCart" icon="cart-shopping">
+    Accept Ozow payments on your OpenCart store by installing the Ozow OpenCart extension from our integration partners.
+  </Card>
+</CardGroup>
+
+<Note>
+  Ozow plugins are developed and maintained by Ozow's integration partners. Keep your plugin updated to the latest version to benefit from new features, security patches, and compatibility improvements with the latest platform releases.
+</Note>
+
+## Getting a Plugin
+
+To obtain the latest plugin for your platform:
+
+1. **Contact Ozow Support** — email [support@ozow.com](mailto:support@ozow.com) with your platform name and version. The support team will connect you with the right plugin package or partner.
+2. **Check the Merchant Dashboard** — log in to your [Merchant Dashboard](https://dash.ozow.com) and browse the available integrations section for downloadable plugin assets and setup guides.
+
+Once you have the plugin, follow the installation guide included in the package to configure your SiteCode, API Key, and Private Key. You can find these credentials in your Merchant Dashboard under **Merchant Details**.
+
+## Custom API Integration
+
+If your platform is not listed above or you need behaviour that a plugin cannot provide, you can integrate directly with the Ozow Pay-in API. This approach requires knowledge of HTTP POST requests but gives you complete control over the payment experience.
+
+<Tip>
+  For new custom integrations, use the [OneAPI](/api/oneapi/overview) rather than the legacy Pay-in API. OneAPI supports a broader range of payment methods and gives you a single endpoint for all Ozow payment products.
+</Tip>
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="Integration Prerequisites" icon="key" href="/integration/before-you-begin">
+    Retrieve your API credentials and understand staging vs. production environments before configuring any plugin.
+  </Card>
+  <Card title="Contact Support" icon="headset" href="/help/support">
+    Reach out to the Ozow support team for help choosing the right plugin or troubleshooting your integration.
+  </Card>
+</CardGroup>

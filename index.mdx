@@ -1,20 +1,66 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "Ozow Hub: Developer & Integration Documentation"
+sidebarTitle: "Home"
+description: "Welcome to Ozow Hub — your complete resource for integrating Ozow payments, payouts, refunds, and the OneAPI into your business."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+Ozow is South Africa's leading account-to-account payment platform, enabling merchants to accept instant EFT payments, automate payouts, process refunds, and offer peer-to-peer payments — all through a simple, secure API. Whether you're a developer integrating for the first time or looking to upgrade to the unified OneAPI, this hub has everything you need.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/getting-started">
+    Integrate Ozow payments into your checkout in three steps. Get your API keys and make your first payment request.
+  </Card>
+  <Card title="Products Overview" icon="grid-2" href="/products">
+    Explore Pay by Bank, Payouts, Refunds, Ozow ME, and Pocket — and find the right solution for your business.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/payin/overview">
+    Full reference for the Pay-in API, Payouts API, and the new unified OneAPI (Beta).
+  </Card>
+  <Card title="OneAPI (Beta)" icon="bolt" href="/api/oneapi/overview">
+    Ozow's modern unified API — single endpoint, OAuth 2.0, idempotency, and access to every payment method.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## Get Up and Running
+
+<Steps>
+  <Step title="Create your Ozow merchant account">
+    [Sign up at ozow.com/merchants](https://ozow.com/merchants) to get access to the Merchant Dashboard, where you'll find your API keys and site codes.
+  </Step>
+  <Step title="Retrieve your credentials">
+    Log in to the [Staging Dashboard](https://stagingdash.ozow.com) to get your test API Key, Private Key, and Site Code. Use these for all development and testing.
+  </Step>
+  <Step title="Post your first payment request">
+    Send a POST request to `https://stagingapi.ozow.com/PostPaymentRequest` with your site code, amount, and hash. See [Before You Begin](/integration/before-you-begin) for the full parameter list.
+  </Step>
+  <Step title="Go live">
+    Once testing is complete, swap to your production credentials from the [Live Dashboard](https://dash.ozow.com) and point your requests to `https://api.ozow.com`.
+  </Step>
+</Steps>
+
+## Explore by Product
+
+<CardGroup cols={3}>
+  <Card title="Pay by Bank" icon="building-columns" href="/products/pay-by-bank">
+    Account-to-account EFT payments — fast, secure, and 3-D Secure enabled.
+  </Card>
+  <Card title="Payouts" icon="money-bill-transfer" href="/products/payouts">
+    Real-time payouts to any South African bank account, 24/7.
+  </Card>
+  <Card title="Refunds" icon="rotate-left" href="/products/refunds">
+    Instant full or partial refunds, processed directly from your dashboard.
+  </Card>
+  <Card title="Ozow ME" icon="qrcode" href="/products/ozow-me">
+    Peer-to-peer payments via QR code, SMS, or WhatsApp.
+  </Card>
+  <Card title="Pocket" icon="wallet" href="/products/pocket">
+    Digital wallet for instant pocket-to-pocket transfers and ATM withdrawals.
+  </Card>
+  <Card title="Capitec Pay" icon="credit-card" href="/help/faqs#capitec-pay">
+    Integrated Capitec Pay — no additional integration required.
+  </Card>
+</CardGroup>
+
+<Note>
+  **New integration?** Ozow recommends starting with [OneAPI](/api/oneapi/overview) — the unified, future-proof REST API. All new payment methods and features are added to OneAPI first, and legacy APIs will eventually be deprecated.
+</Note>

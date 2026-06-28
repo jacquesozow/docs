@@ -1,0 +1,97 @@
+---
+title: "Manage Your Ozow Merchant Float for Payouts and Refunds"
+sidebarTitle: "Float Management"
+description: "Learn how to top up your Ozow merchant float, set low-balance alerts, and ensure sufficient funds for automated payouts and refunds."
+---
+
+Your Ozow merchant float is a balance held by Ozow on your behalf that funds two critical operations: **payouts** to your customers and **refunds** on completed transactions. Both draw from the same pool, so maintaining a healthy float balance is essential to keeping your payment operations running without interruption. This page walks you through topping up your float, configuring low-balance alerts, and understanding how the float interacts with your day-to-day transactions.
+
+---
+
+## What is the merchant float?
+
+The float is a pre-funded balance that Ozow holds in your merchant account. When you initiate a payout or process a refund, Ozow deducts the corresponding amount from this balance and transfers it to the recipient. Because both payouts and refunds draw from the same float, you must ensure the balance covers your anticipated transaction volume at all times.
+
+<Warning>
+  If your float balance is insufficient when a payout or refund is submitted, the transaction will fail. Always ensure your float is adequately funded before processing high-volume periods.
+</Warning>
+
+---
+
+## Top up your float
+
+Topping up your float is a straightforward bank transfer process. Once the funds reach Ozow's bank account, your float balance is updated automatically — typically within a few hours.
+
+<Steps>
+  <Step title="Log in to the Merchant Dashboard">
+    Go to [dash.ozow.com](https://dash.ozow.com) and sign in with your merchant credentials.
+  </Step>
+  <Step title="Navigate to Floats">
+    Select **Floats** from the main navigation menu, then click **Top Up Float**.
+  </Step>
+  <Step title="Note your reference number">
+    The dashboard displays a **unique reference number** generated for your account. Copy this reference — you'll need it in the next step to ensure the transfer is allocated correctly.
+  </Step>
+  <Step title="Make a bank transfer">
+    Log in to your online banking and make a transfer to the **Ozow bank account** shown on screen. Use the generated reference number as the **payment reference**. An incorrect or missing reference will delay the allocation of funds to your float.
+  </Step>
+  <Step title="Wait for your float to be credited">
+    Your float balance is updated **within a few hours** of the funds reflecting in Ozow's bank account. You'll see the updated balance reflected in the Floats section of your dashboard.
+  </Step>
+</Steps>
+
+<Tip>
+  Top up your float during business hours on a weekday to ensure the fastest possible allocation. Transfers made over weekends or on public holidays may take longer to reflect.
+</Tip>
+
+---
+
+## Set a float balance alert
+
+Rather than manually checking your float balance, you can configure Ozow to send an automatic email notification to designated contacts whenever your balance drops below a threshold you define. This gives you advance warning to top up before your float runs dry.
+
+### Configure the alert threshold
+
+1. Log in to the [Merchant Dashboard](https://dash.ozow.com).
+2. Navigate to **Merchant Details** and click **Edit Details** in the top-right corner.
+3. Enter your chosen value in the **Float Balance Alert Amount** field.
+4. Click **Save** to apply the change.
+
+### Add a contact to receive alert emails
+
+1. In the Merchant Dashboard, open the **Contacts** tab.
+2. Click **Add Contact** to create a new contact, or click **Edit** on an existing one.
+3. Complete the contact's details, including their **email address**.
+4. Check the **Float Balance Alert** option from the notification preferences list.
+5. Click **Submit** to save.
+
+You can add multiple contacts to receive the alert — useful for notifying both your finance team and a backup contact. Once configured, each listed contact receives an email notification every time the float drops below your specified threshold.
+
+<Tip>
+  Enable float balance alerts as soon as you go live. A well-timed notification gives you enough lead time to top up your float before it affects any pending payouts or refunds.
+</Tip>
+
+---
+
+## How the float is used
+
+Both [payouts](/products/payouts) and refunds draw from the same merchant float balance:
+
+| Operation | Float impact |
+|---|---|
+| Payout to customer | Deducted from float at submission |
+| Refund on a transaction | Deducted from float at processing |
+| Incoming payment from customer | Does **not** add to float |
+
+Keep this in mind when estimating how much float you need — a busy refund period and a scheduled payout run happening simultaneously will draw down your balance faster than either would on its own.
+
+<Warning>
+  Ensure your float is funded before processing payouts or refunds. Transactions submitted against an empty or insufficient float will fail and may require manual intervention to resubmit.
+</Warning>
+
+---
+
+## Next steps
+
+- Learn about the full payout process, limits, and processing windows: [Payouts](/products/payouts)
+- See payout and float FAQs: [Frequently Asked Questions](/help/faqs)

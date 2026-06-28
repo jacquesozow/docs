@@ -1,0 +1,123 @@
+---
+title: "OneAPI Webhooks: Receive Ozow Payment Events"
+sidebarTitle: "Webhooks"
+description: "Ozow OneAPI sends signed webhook notifications for payment and refund events. Learn how to receive, verify, and process them reliably in your backend."
+---
+
+Rather than polling OneAPI for payment status updates, you register a `notifyUrl` and OneAPI pushes signed HTTP POST notifications to your server the moment a payment or refund status changes. Each notification carries an HMAC-SHA256 signature derived from your webhook secret, so you can verify that every event genuinely came from Ozow before acting on it. Combined with idempotent processing, webhooks give you a real-time, reliable view of your payment lifecycle without unnecessary API calls.
+
+## Set up your webhook endpoint
+
+Include a `notifyUrl` in the body of your [payment creation request](/api/oneapi/payments). OneAPI will POST event notifications to that URL whenever the payment or any associated refund changes status.
+
+Your endpoint must:
+- Accept `POST` requests with a `Content-Type: application/json` body
+- Return an **HTTP 200** response within **5 seconds**
+- Be accessible from Ozow's servers over HTTPS
+
+## Supported events
+
+| Event | Trigger |
+|---|---|
+| `payment.complete` | Payment successfully completed |
+| `payment.failed` | Payment attempt failed |
+| `payment.cancelled` | Customer cancelled the payment |
+| `refund.complete` | Refund successfully processed |
+| `refund.failed` | Refund processing failed |
+
+## Webhook payload
+
+OneAPI sends the following JSON body on each notification.
+
+<ResponseField name="event" type="string">
+  The event type that triggered this notification (e.g., `payment.complete`, `refund.failed`). Use this field to route the event to the correct handler in your code.
+</ResponseField>
+
+<ResponseField name="paymentId" type="string">
+  The unique identifier of the payment this event relates to. Use this as your idempotency key to avoid processing the same event twice.
+</ResponseField>
+
+<ResponseField name="merchantReference" type="string">
+  The `merchantReference` you supplied when you created the payment, allowing you to look up the corresponding order in your own system.
+</ResponseField>
+
+<ResponseField name="amount" type="integer">
+  The payment amount in cents (e.g., `10000` for R100.00).
+</ResponseField>
+
+<ResponseField name="currency" type="string">
+  The payment currency. Currently always `ZAR`.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  The current status of the payment or refund at the time of this event: `COMPLETE`, `FAILED`, or `CANCELLED`.
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp indicating when the event occurred (e.g., `2024-01-15T10:45:00Z`).
+</ResponseField>
+
+<ResponseField name="metadata" type="object">
+  The `metadata` object you passed in the original payment creation request, returned verbatim so you can carry internal context through the full payment lifecycle.
+</ResponseField>
+
+<ResponseField name="signature" type="string">
+  HMAC-SHA256 hex digest of the raw request body, computed using your webhook secret. Always verify this value before acting on the event.
+</ResponseField>
+
+## Example payload
+
+```json
+{
+  "event": "payment.complete",
+  "paymentId": "pay_xyz789",
+  "merchantReference": "ORDER-98765",
+  "amount": 10000,
+  "currency": "ZAR",
+  "status": "COMPLETE",
+  "timestamp": "2024-01-15T10:45:00Z",
+  "metadata": {
+    "internalOrderId": "98765",
+    "channel": "web"
+  },
+  "signature": "3d4f8c2a1b..."
+}
+```
+
+## Verify the signature
+
+<Warning>
+  Always verify the webhook signature before acting on an incoming notification. Skipping verification leaves your endpoint open to forged events that could trigger fraudulent order fulfilment or refunds.
+</Warning>
+
+Ozow signs each webhook by computing an HMAC-SHA256 digest of the **raw request body bytes** using your webhook secret (available in your Ozow Dashboard). Compare that digest against the `signature` field in the payload.
+
+```python Python
+import hmac
+import hashlib
+
+def verify_webhook(payload_body: bytes, signature: str, webhook_secret: str) -> bool:
+    expected = hmac.new(
+        webhook_secret.encode('utf-8'),
+        payload_body,
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, signature)
+```
+
+Use `hmac.compare_digest` (or your language's equivalent constant-time comparison) rather than a plain equality check to prevent timing attacks.
+
+## Best practices
+
+- **Respond fast, process asynchronously.** Return HTTP 200 within 5 seconds to acknowledge receipt, then process the event in a background job or queue. Long-running handlers risk timing out and triggering unnecessary retries.
+- **Handle duplicate delivery.** Ozow may deliver the same event more than once. Use `paymentId` (and `event` type) as a composite idempotency key in your handler to ensure you process each logical event only once.
+- **Verify every signature.** Check the HMAC-SHA256 signature on every incoming request before reading or acting on any payload fields.
+- **Log raw payloads.** Store the raw JSON body for auditing and debugging before you parse or transform it.
+
+## Retry policy
+
+If your endpoint returns a non-2xx response or does not respond within the timeout window, Ozow automatically retries the webhook delivery using exponential backoff for up to **24 hours**. Design your handler to be idempotent so safe retries never cause double-processing.
+
+---
+
+For webhook behaviour on the legacy Pay-in and Payouts APIs, see the [integration webhooks](/integration/webhooks) documentation.

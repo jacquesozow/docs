@@ -1,0 +1,115 @@
+---
+title: "POST /PostPayoutRequest — Submit an Ozow Payout"
+sidebarTitle: "Submit Payout"
+description: "POST /PostPayoutRequest sends a payout to a South African bank account. Accepts account details, amount, and reference. Returns a payout ID and status."
+---
+
+`POST /PostPayoutRequest` is the core endpoint of the Payouts API. You send a single JSON body containing the recipient's bank details, the payout amount, your internal reference, and the transaction type (real-time RTC or standard EFT). Ozow runs a CDV check on the account details, deducts the amount from your merchant float, and submits the payout to the banking network. The response gives you a unique `PayoutId` that you use to track the payout's progress via [GET /GetPayoutStatus](/api/payouts/payout-status).
+
+## Endpoint
+
+| Environment | URL |
+|-------------|-----|
+| Staging     | `POST https://stagingapi.ozow.com/PostPayoutRequest` |
+| Production  | `POST https://api.ozow.com/PostPayoutRequest` |
+
+## Request headers
+
+| Header | Value |
+|--------|-------|
+| `Authorization` | `Bearer {token}` — see [Authentication](/api/payouts/authentication) |
+| `Content-Type` | `application/json` |
+| `Accept` | `application/json` |
+
+## Request body parameters
+
+<ParamField body="SiteCode" type="string" required>
+  Your Ozow site code, found in the Merchant Dashboard. Identifies which site the payout is charged against.
+</ParamField>
+
+<ParamField body="Amount" type="decimal" required>
+  Payout amount in South African Rand (ZAR), expressed as a decimal. For example, `500.00` sends R500.00. Must be greater than zero and within the applicable [amount limit](/api/payouts/overview#amount-limits).
+</ParamField>
+
+<ParamField body="RecipientName" type="string" required>
+  Full name of the payout recipient as it appears on their bank account. Used for reconciliation and bank statement references.
+</ParamField>
+
+<ParamField body="RecipientAccountNumber" type="string" required>
+  The recipient's bank account number. Ozow runs a CDV check against this value combined with `RecipientBankCode` before submitting the payout.
+</ParamField>
+
+<ParamField body="RecipientBankCode" type="string" required>
+  The six-digit bank branch code for the recipient's account (e.g. `632005` for Nedbank). Must be a valid South African branch code.
+</ParamField>
+
+<ParamField body="RecipientAccountType" type="string" required>
+  Type of the recipient's bank account. Accepted values: `Cheque`, `Savings`.
+</ParamField>
+
+<ParamField body="MyReference" type="string" required>
+  Your internal reference for this payout. Use this to correlate the payout back to a transaction in your own system. Must be unique per payout.
+</ParamField>
+
+<ParamField body="TheirReference" type="string" required>
+  The reference that appears on the recipient's bank statement. Keep it concise and meaningful for your customer (e.g. `Withdrawal`, `Refund-1234`).
+</ParamField>
+
+<ParamField body="TransactionType" type="string" required>
+  Payout method. Use `RTC` for real-time clearing (funds within minutes, subject to [processing windows](/api/payouts/overview#processing-windows)) or `EFT` for overnight batch processing.
+</ParamField>
+
+<ParamField body="IsTest" type="boolean" required>
+  Set to `true` when calling the Staging environment; set to `false` for Production. Passing `true` against the Production endpoint will be rejected.
+</ParamField>
+
+## Example request
+
+```json Request
+{
+  "SiteCode": "TST-TST-001",
+  "Amount": 500.00,
+  "RecipientName": "Jane Doe",
+  "RecipientAccountNumber": "1234567890",
+  "RecipientBankCode": "632005",
+  "RecipientAccountType": "Cheque",
+  "MyReference": "PAYOUT-001",
+  "TheirReference": "Withdrawal",
+  "TransactionType": "RTC",
+  "IsTest": false
+}
+```
+
+## Response fields
+
+<ResponseField name="PayoutId" type="string">
+  Ozow's unique identifier for this payout. Store this value — you'll need it to call [GET /GetPayoutStatus](/api/payouts/payout-status) and to reference the payout in any support queries.
+</ResponseField>
+
+<ResponseField name="Status" type="string">
+  Initial status of the submitted payout. Possible values at submission time: `Accepted`, `Pending`, `Failed`.
+</ResponseField>
+
+<ResponseField name="StatusMessage" type="string">
+  A human-readable description of the current status. For failures, this field contains a brief explanation of the rejection reason (e.g. `CDV validation failed`, `Insufficient float balance`).
+</ResponseField>
+
+## Example response
+
+```json Response
+{
+  "PayoutId": "pyt_abc123",
+  "Status": "Accepted",
+  "StatusMessage": "Payout accepted for processing"
+}
+```
+
+## Validation and errors
+
+<Note>
+  CDV validation runs automatically on every submission. If the combination of `RecipientBankCode` and `RecipientAccountNumber` fails the check-digit rules, Ozow returns an error immediately and no funds are deducted from your float.
+</Note>
+
+<Warning>
+  The Payouts API processes **one payout per request** — batch files are not supported. If you need to disburse to multiple recipients, queue the requests on your side and call `/PostPayoutRequest` once per recipient.
+</Warning>

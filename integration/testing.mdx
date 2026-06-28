@@ -1,0 +1,97 @@
+---
+title: "Test Your Ozow Integration in Staging"
+sidebarTitle: "Testing"
+description: "Use the Ozow Staging environment to test payment flows, payouts, refunds, and webhooks before going live — no real money processed."
+---
+
+Ozow's Staging environment is a full mirror of production that lets you exercise every part of your integration before a single real rand changes hands. You can drive payments through success, cancellation, and timeout scenarios, confirm your webhook handler fires and verifies correctly, and run payout and refund flows — all against real Ozow infrastructure, with zero financial risk. Investing time in thorough staging tests is the single most effective way to avoid surprises on launch day.
+
+## Staging Environment URLs
+
+Use the following URLs when your integration is pointed at staging. Never mix staging and production URLs.
+
+| Service | Staging URL |
+|---------|-------------|
+| Pay-in API | `https://stagingapi.ozow.com` |
+| OneAPI | `https://stagingone.ozow.com` |
+| Merchant Dashboard | `https://stagingdash.ozow.com` |
+
+<Note>
+  In the Staging environment, Ozow does not process real money. Use it freely and repeatedly to test every scenario your integration might encounter — edge cases included.
+</Note>
+
+## Getting Staging Credentials
+
+Your staging credentials are separate from your production credentials and must be retrieved from the Staging Dashboard:
+
+1. Log in to [https://stagingdash.ozow.com](https://stagingdash.ozow.com) with your staging account.
+2. Navigate to **Merchant Admin → Merchant Details** to find your **API Key** and **Private Key**.
+3. Navigate to **Merchant Admin → Site** to find your **SiteCode**.
+
+If you do not yet have a staging account, contact [support@ozow.com](mailto:support@ozow.com) to have one provisioned.
+
+For the full credentials reference, see [Integration Prerequisites](/integration/before-you-begin).
+
+## What You Can Test
+
+### Payment Flows
+
+Test all three terminal payment states to confirm your success, cancel, and error pages render correctly and your backend handles each outcome:
+
+- **Success** — complete a payment through the Ozow staging UI to trigger a `Complete` webhook and success redirect
+- **Cancel** — use the cancel option in the staging payment UI to trigger a `Cancelled` webhook and cancel redirect
+- **Timeout** — let a payment session expire to trigger an `Expired` webhook and error redirect
+
+### Payout Submission
+
+Staging supports standard payout submissions so you can verify your payout integration end-to-end:
+
+- Use the **Mock API** to simulate payout responses without submitting to the banking network
+- Use the **Actual API** to submit payouts to the staging banking simulation
+- Submit payout batches **before 16:00 CAT** to have them included in the same-day batch processing window during staging tests
+
+### Refund Flows
+
+Submit refund requests against transactions completed in staging to confirm your refund API calls are correctly formed and your system handles refund status notifications.
+
+### Webhook Delivery
+
+Point your `NotifyUrl` at your staging server (or a tool like [webhook.site](https://webhook.site) during early development) and confirm that:
+
+- Webhooks arrive for every payment outcome
+- Your hash verification logic produces a match for every valid payload
+- Your endpoint returns HTTP 200 within the required window
+
+## Going Live Checklist
+
+Before you switch your integration to production, work through every item below:
+
+<Steps>
+  <Step title="Swap API Credentials">
+    - [ ] Replace your staging **API Key** with your production API Key
+    - [ ] Replace your staging **Private Key** with your production Private Key
+    - [ ] Update your **SiteCode** to the production site code from [dash.ozow.com](https://dash.ozow.com/MerchantAdmin/Site)
+  </Step>
+  <Step title="Update API Endpoints">
+    - [ ] Change the Pay-in API URL to `https://api.ozow.com/PostPaymentRequest`
+    - [ ] If using OneAPI, change the endpoint to `https://api.oneozow.com`
+  </Step>
+  <Step title="Verify End-to-End in Production">
+    - [ ] Process a live end-to-end transaction with a small real amount to confirm the full flow works
+    - [ ] Verify the production webhook fires and your hash verification passes against your live Private Key
+  </Step>
+  <Step title="Configure Live Webhook Endpoint">
+    - [ ] Set your live `NotifyUrl` to your production server endpoint (HTTPS required)
+    - [ ] Confirm your production server returns HTTP 200 promptly and processes notifications correctly
+  </Step>
+</Steps>
+
+<Warning>
+  Never use staging credentials in your production environment, and never use production credentials in staging. Mixing environments will cause payment failures, may prevent funds from settling correctly, and could affect your merchant account standing.
+</Warning>
+
+## Related Resources
+
+<Card title="Integration Prerequisites" icon="key" href="/integration/before-you-begin">
+  Review the full credential reference and three-step integration overview before you start testing.
+</Card>

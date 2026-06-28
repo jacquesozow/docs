@@ -1,0 +1,85 @@
+---
+title: "GET /GetPayoutStatus — Check Ozow Payout Status"
+sidebarTitle: "Payout Status"
+description: "GET /GetPayoutStatus returns the current status of an Ozow payout — Accepted, Pending, Complete, Failed, or Rejected — with processing date and amount."
+---
+
+After you submit a payout with [POST /PostPayoutRequest](/api/payouts/submit-payout), you use `GET /GetPayoutStatus` to track it through the banking network. Pass the `PayoutId` returned at submission alongside your `siteCode`, and Ozow returns the latest status, the processed timestamp (once the payout completes), and the full payout details for reconciliation. Because bank confirmation can take time, you should poll this endpoint periodically rather than expecting an instant final status — most payouts are confirmed by 10:00 the morning after submission.
+
+## Endpoint
+
+| Environment | URL |
+|-------------|-----|
+| Staging     | `GET https://stagingapi.ozow.com/GetPayoutStatus?payoutId={payoutId}&siteCode={siteCode}` |
+| Production  | `GET https://api.ozow.com/GetPayoutStatus?payoutId={payoutId}&siteCode={siteCode}` |
+
+## Request headers
+
+| Header | Value |
+|--------|-------|
+| `Authorization` | `Bearer {token}` — see [Authentication](/api/payouts/authentication) |
+| `Accept` | `application/json` |
+
+## Query parameters
+
+<ParamField query="payoutId" type="string" required>
+  The unique payout identifier returned in the `PayoutId` field of the `/PostPayoutRequest` response. Example: `pyt_abc123`.
+</ParamField>
+
+<ParamField query="siteCode" type="string" required>
+  Your Ozow site code. Must match the `SiteCode` used when the payout was originally submitted.
+</ParamField>
+
+## Example request
+
+```bash
+curl -X GET 'https://api.ozow.com/GetPayoutStatus?payoutId=pyt_abc123&siteCode=TST-TST-001' \
+  -H 'Authorization: Bearer your-token' \
+  -H 'Accept: application/json'
+```
+
+## Response fields
+
+<ResponseField name="PayoutId" type="string">
+  The unique Ozow identifier for this payout, matching the value you supplied in the query.
+</ResponseField>
+
+<ResponseField name="Status" type="string">
+  Current status of the payout. See [Status values](#status-values) below for a full description of each state.
+</ResponseField>
+
+<ResponseField name="StatusMessage" type="string">
+  A human-readable description of the current status, including failure reasons where applicable.
+</ResponseField>
+
+<ResponseField name="Amount" type="decimal">
+  The payout amount in South African Rand (ZAR) as originally submitted.
+</ResponseField>
+
+<ResponseField name="RecipientName" type="string">
+  The recipient name as provided in the original payout request.
+</ResponseField>
+
+<ResponseField name="ProcessedDate" type="string">
+  ISO 8601 date-time string indicating when the payout was processed by the bank (e.g. `2024-11-15T09:42:00Z`). This field is only populated once the payout reaches `Complete` status.
+</ResponseField>
+
+## Status values
+
+Understanding the status lifecycle helps you decide when to stop polling and how to handle outcomes in your system.
+
+| Status | Meaning |
+|--------|---------|
+| **Accepted** | Ozow has received the payout and queued it for submission to the banking network. No action required from you at this point. |
+| **Pending** | The payout has been submitted to the bank and Ozow is awaiting confirmation. Continue polling. |
+| **Complete** | The bank has confirmed successful delivery of funds to the recipient's account. This is the terminal success state. |
+| **Failed** | The payout could not be processed — common causes include insufficient float balance or CDV validation failure. Review `StatusMessage` for details. |
+| **Rejected** | The bank rejected the payout after submission, typically due to an incorrect or closed account number. Contact your recipient to obtain updated details. |
+
+## Polling guidance
+
+<Note>
+  Payout status is typically updated by **10:00 CAT** on the morning after submission for standard (EFT) payouts. In exceptional cases, confirmation may arrive later in the same business day. For RTC payouts, status often updates within minutes during [processing windows](/api/payouts/overview#processing-windows).
+</Note>
+
+We recommend implementing an exponential back-off polling strategy: check status a few minutes after submission, then again after 30 minutes, and finally check the following morning if the payout remains in `Accepted` or `Pending` state. Stop polling once you receive a terminal status — `Complete`, `Failed`, or `Rejected`.

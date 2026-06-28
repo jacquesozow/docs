@@ -1,0 +1,97 @@
+---
+title: "Handle Ozow Payment Responses and Redirects"
+sidebarTitle: "Payment Response"
+description: "After payment, Ozow redirects the customer to your URL with transaction status fields. Always verify the response hash before marking an order as paid."
+---
+
+Once your customer finishes their interaction on the Ozow payment gateway — whether they complete the payment, cancel it, or encounter an error — Ozow sends you the outcome through two parallel channels. First, it redirects the customer's browser to the `SuccessUrl`, `CancelUrl`, or `ErrorUrl` you specified in the original request, appending transaction details as query parameters. Second, and independently of the browser, Ozow POSTs the same data to your `NotifyUrl` webhook. Because the browser redirect can be disrupted if the customer closes the tab or loses connectivity, you should treat the `NotifyUrl` notification as the authoritative signal and use the redirect only to update your UI.
+
+## Response delivery channels
+
+| Channel | Trigger | Reliability |
+|---------|---------|-------------|
+| Browser redirect to `SuccessUrl` | Customer completes payment | Lower — dependent on customer's browser session staying open |
+| Browser redirect to `CancelUrl` | Customer cancels | Lower — dependent on customer's browser session staying open |
+| Browser redirect to `ErrorUrl` | Payment error occurs | Lower — dependent on customer's browser session staying open |
+| Server-to-server POST to `NotifyUrl` | Any terminal status | Higher — direct server call, independent of the browser |
+
+## Response fields
+
+<ResponseField name="TransactionId" type="string">
+  Ozow's unique identifier for this transaction. Store this value — you need it to query the transaction via [GET /GetTransaction](/api/payin/transaction-status).
+</ResponseField>
+
+<ResponseField name="MerchantCode" type="string">
+  Your Ozow merchant code, confirming which merchant account processed the transaction.
+</ResponseField>
+
+<ResponseField name="SiteCode" type="string">
+  The site code under which the payment was made, matching the `SiteCode` you submitted in the original request.
+</ResponseField>
+
+<ResponseField name="TransactionStatus" type="string">
+  The outcome of the transaction. See [Transaction statuses](#transaction-statuses) below for possible values and their meanings.
+</ResponseField>
+
+<ResponseField name="Amount" type="decimal">
+  The transaction amount in ZAR, as a decimal value. Verify this matches the amount from your original request before fulfilling the order.
+</ResponseField>
+
+<ResponseField name="CurrencyCode" type="string">
+  The currency code for the transaction — always `ZAR`.
+</ResponseField>
+
+<ResponseField name="IsTest" type="boolean">
+  Indicates whether this was a test transaction (`true`) or a live transaction (`false`). Reject `IsTest: true` responses in your production order-fulfilment logic.
+</ResponseField>
+
+<ResponseField name="StatusMessage" type="string">
+  A human-readable description of the transaction outcome. Useful for logging and displaying feedback to customers, but use `TransactionStatus` for programmatic branching.
+</ResponseField>
+
+<ResponseField name="OptionalFields1" type="string">
+  Pass-through value you submitted as `OptionalFields1` in the original request, returned unchanged.
+</ResponseField>
+
+<ResponseField name="OptionalFields2" type="string">
+  Pass-through value you submitted as `OptionalFields2` in the original request, returned unchanged.
+</ResponseField>
+
+<ResponseField name="OptionalFields3" type="string">
+  Pass-through value you submitted as `OptionalFields3` in the original request, returned unchanged.
+</ResponseField>
+
+<ResponseField name="OptionalFields4" type="string">
+  Pass-through value you submitted as `OptionalFields4` in the original request, returned unchanged.
+</ResponseField>
+
+<ResponseField name="OptionalFields5" type="string">
+  Pass-through value you submitted as `OptionalFields5` in the original request, returned unchanged.
+</ResponseField>
+
+<ResponseField name="Hash" type="string">
+  A SHA-512 hash of the response fields, computed by Ozow using your Private Key. You **must** verify this hash before taking any action on the response. See [Verifying the response hash](#verifying-the-response-hash) below.
+</ResponseField>
+
+## Transaction statuses
+
+<Expandable title="View all statuses">
+
+| Status | Meaning | Recommended action |
+|--------|---------|-------------------|
+| `Complete` | The customer successfully completed the payment. | Verify the hash, then fulfil the order. |
+| `Cancelled` | The customer chose to cancel the payment. | Return them to the cart or offer a retry. |
+| `Error` | The payment failed due to a technical error. | Redirect to `ErrorUrl` with a friendly message and offer a retry. |
+| `PendingInvestigation` | Ozow is investigating the transaction and cannot yet confirm the outcome. | Hold the order in a pending state and wait for a follow-up notification. |
+
+</Expandable>
+
+## Verifying the response hash
+
+Ozow signs every response with the same SHA-512 mechanism used for requests. Before you update your order status, recompute the expected hash from the response fields using your Private Key and compare it to the `Hash` field in the response. If the values don't match, discard the response — it may have been tampered with in transit.
+
+<Warning>
+  Never mark an order as paid, dispatch goods, or credit an account without first verifying that the response `Hash` is valid. Skipping hash verification opens your integration to spoofed payment confirmations.
+</Warning>
+
+For high-value or critical transactions, also confirm the status independently by calling [GET /GetTransaction](/api/payin/transaction-status), which gives you a server-side verification that doesn't rely on the redirect payload.

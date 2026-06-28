@@ -1,0 +1,130 @@
+---
+title: "POST /PostPaymentRequest — Initiate an Ozow Payment"
+sidebarTitle: "Post Payment"
+description: "POST /PostPaymentRequest initiates a payment request. Accepts site code, amount, and hash. Returns a redirect URL to send your customer to Ozow."
+---
+
+`POST /PostPaymentRequest` is the entry point for every payment you create with the Pay-in API. You call it from your server with your site credentials, the transaction details, and a SHA-512 hash signature. Ozow validates the request and — if everything checks out — returns a URL. You then redirect your customer's browser to that URL, where they complete the payment through their bank. Keep your server-side logic clean: compute the hash, POST the form, and redirect; the Ozow gateway handles everything else until the customer returns to your site.
+
+## Endpoints
+
+| Environment | URL |
+|-------------|-----|
+| Staging     | `POST https://stagingapi.ozow.com/PostPaymentRequest` |
+| Production  | `POST https://api.ozow.com/PostPaymentRequest` |
+
+**Content-Type:** `application/x-www-form-urlencoded` or `application/json`
+
+## Request parameters
+
+### Required fields
+
+<ParamField body="SiteCode" type="string" required>
+  Your Ozow site code, retrieved from the Merchant Dashboard. Each site you register gets its own code — make sure you use the correct one for the environment (staging vs. production).
+</ParamField>
+
+<ParamField body="CountryCode" type="string" required>
+  ISO 3166-1 alpha-2 country code. Always `ZA` for South Africa.
+</ParamField>
+
+<ParamField body="CurrencyCode" type="string" required>
+  ISO 4217 currency code. Always `ZAR` for South African Rand.
+</ParamField>
+
+<ParamField body="Amount" type="decimal" required>
+  Payment amount in ZAR, formatted as a decimal with two places — for example `100.00`. Do not include currency symbols or thousand separators.
+</ParamField>
+
+<ParamField body="TransactionReference" type="string" required>
+  Your unique reference for this transaction, such as an order number. Maximum 50 characters. Ozow echoes this value back in the response so you can match the outcome to your internal record.
+</ParamField>
+
+<ParamField body="BankReference" type="string" required>
+  The reference that appears on the customer's bank statement. Maximum 20 characters. Keep it short and recognisable so customers can identify the debit.
+</ParamField>
+
+<ParamField body="IsTest" type="boolean" required>
+  Set to `true` when using the staging environment and `false` in production. This flag is included in the hash computation, so mismatching it with your environment will cause a hash validation error.
+</ParamField>
+
+<ParamField body="ApiKey" type="string" required>
+  Your Ozow API Key from the Merchant Dashboard. See [Authentication](/api/payin/authentication) for where to find it.
+</ParamField>
+
+<ParamField body="HashCheck" type="string" required>
+  The SHA-512 hash of the concatenated request fields, computed using your Private Key. See [Authentication](/api/payin/authentication) for the exact field order and a code example.
+</ParamField>
+
+### Optional fields
+
+<ParamField body="CancelUrl" type="string">
+  The URL Ozow redirects the customer to if they cancel the payment. If omitted, Ozow uses the default cancel URL configured on your site in the Merchant Dashboard. Also included in the `HashCheck` computation — use an empty string in the hash if you omit it here.
+</ParamField>
+
+<ParamField body="ErrorUrl" type="string">
+  The URL Ozow redirects the customer to if an error occurs during payment. Falls back to the site-level default if not supplied.
+</ParamField>
+
+<ParamField body="SuccessUrl" type="string">
+  The URL Ozow redirects the customer to after a successful payment. Falls back to the site-level default if not supplied.
+</ParamField>
+
+<ParamField body="NotifyUrl" type="string">
+  A server-to-server webhook URL that Ozow POSTs the transaction result to, independent of the customer's browser redirect. Recommended for reliable order fulfilment — browser redirects can be interrupted if the customer closes the tab.
+</ParamField>
+
+<ParamField body="Customer" type="string">
+  An identifier for the customer (e.g. your internal user ID or email address). Ozow passes this through to your notification for record-keeping purposes.
+</ParamField>
+
+<ParamField body="OptionalFields1" type="string">
+  Additional pass-through data field. Ozow returns this value in the payment response and webhook notification unchanged.
+</ParamField>
+
+<ParamField body="OptionalFields2" type="string">
+  Additional pass-through data field. Ozow returns this value in the payment response and webhook notification unchanged.
+</ParamField>
+
+<ParamField body="OptionalFields3" type="string">
+  Additional pass-through data field. Ozow returns this value in the payment response and webhook notification unchanged.
+</ParamField>
+
+<ParamField body="OptionalFields4" type="string">
+  Additional pass-through data field. Ozow returns this value in the payment response and webhook notification unchanged.
+</ParamField>
+
+<ParamField body="OptionalFields5" type="string">
+  Additional pass-through data field. Ozow returns this value in the payment response and webhook notification unchanged.
+</ParamField>
+
+## Responses
+
+### Success — HTTP 200
+
+Ozow returns a plain-text or JSON body containing a single URL. Redirect your customer's browser to this URL immediately.
+
+```
+https://pay.ozow.com/...
+```
+
+### Error — HTTP 400
+
+Ozow returns an error body describing the validation failure — for example, a mismatched hash or a missing required field. Check the response body for details, correct the issue, and retry.
+
+## Example request
+
+```bash
+curl -X POST https://stagingapi.ozow.com/PostPaymentRequest \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'SiteCode=TST-TST-001' \
+  -d 'CountryCode=ZA' \
+  -d 'CurrencyCode=ZAR' \
+  -d 'Amount=100.00' \
+  -d 'TransactionReference=ORDER-12345' \
+  -d 'BankReference=Order12345' \
+  -d 'IsTest=true' \
+  -d 'ApiKey=your-api-key' \
+  -d 'HashCheck=computed-sha512-hash'
+```
+
+Replace `your-api-key` and `computed-sha512-hash` with the real values from your [Merchant Dashboard](/api/payin/authentication) and your hash function output.

@@ -1,0 +1,93 @@
+---
+title: "GET /GetTransaction — Check Ozow Transaction Status"
+sidebarTitle: "Transaction Status"
+description: "GET /GetTransaction lets you query real-time status for any Ozow transaction. Use it to verify payments before fulfilling orders or processing refunds."
+---
+
+The `GET /GetTransaction` endpoint lets you query the current status of any transaction directly from Ozow's servers, using nothing more than your site code, the transaction ID, and your API Key. Because it bypasses the customer's browser entirely, it gives you a tamper-proof, authoritative answer about whether a payment completed — making it the safest way to gate order fulfilment for high-value transactions. Call it after you receive a webhook notification, or use it as a polling fallback if your `NotifyUrl` endpoint was temporarily unavailable.
+
+## Endpoints
+
+| Environment | URL |
+|-------------|-----|
+| Staging     | `GET https://stagingapi.ozow.com/GetTransaction` |
+| Production  | `GET https://api.ozow.com/GetTransaction` |
+
+## Query parameters
+
+<ParamField query="siteCode" type="string" required>
+  Your Ozow site code, matching the `SiteCode` you used when creating the original payment request. Retrieve it from your [Merchant Dashboard](https://dash.ozow.com/MerchantAdmin/Site).
+</ParamField>
+
+<ParamField query="transactionId" type="string" required>
+  The `TransactionId` returned in the payment response or webhook notification. This is Ozow's unique identifier for the transaction — not your own `TransactionReference`.
+</ParamField>
+
+<ParamField query="isTest" type="boolean" required>
+  Set to `true` when querying transactions created in the staging environment, and `false` for live transactions. Mismatching this value with the transaction's environment will result in a not-found error.
+</ParamField>
+
+## Request headers
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `ApiKey` | Yes | Your Ozow API Key from the Merchant Dashboard. Passed as a request header rather than a query parameter. |
+
+## Response fields
+
+<ResponseField name="TransactionId" type="string">
+  Ozow's unique identifier for the transaction, confirming you've retrieved the correct record.
+</ResponseField>
+
+<ResponseField name="Status" type="string">
+  The current status of the transaction: `Complete`, `Cancelled`, `Error`, or `PendingInvestigation`. See the [Payment Response](/api/payin/payment-response#transaction-statuses) page for a full description of each status.
+</ResponseField>
+
+<ResponseField name="Amount" type="decimal">
+  The transaction amount in ZAR. Verify this matches the amount on your original order before fulfilling.
+</ResponseField>
+
+<ResponseField name="CurrencyCode" type="string">
+  The currency code — always `ZAR`.
+</ResponseField>
+
+<ResponseField name="SiteCode" type="string">
+  The site code under which the transaction was processed.
+</ResponseField>
+
+<ResponseField name="TransactionReference" type="string">
+  Your original transaction reference, echoed back so you can reconcile the Ozow record with your internal order.
+</ResponseField>
+
+<ResponseField name="IsTest" type="boolean">
+  Whether the transaction was created in the test environment.
+</ResponseField>
+
+<ResponseField name="CreatedDate" type="string">
+  ISO 8601 timestamp of when the transaction was created.
+</ResponseField>
+
+<ResponseField name="PaymentDate" type="string">
+  ISO 8601 timestamp of when the payment was completed. Null for non-`Complete` transactions.
+</ResponseField>
+
+## Example request
+
+```bash
+curl -X GET \
+  'https://api.ozow.com/GetTransaction?siteCode=TST-TST-001&transactionId=abc123&isTest=false' \
+  -H 'ApiKey: your-api-key'
+```
+
+Replace `TST-TST-001`, `abc123`, and `your-api-key` with your real site code, the transaction ID from your payment response, and your production API Key.
+
+## Best practices
+
+<Note>
+  Ozow recommends calling `GET /GetTransaction` to confirm payment status rather than relying solely on the redirect response or webhook payload. The API response is the authoritative source of truth for a transaction's state.
+</Note>
+
+- **After every `NotifyUrl` webhook** — Re-query the transaction via this endpoint before updating your order state. This double-check guards against replayed or spoofed webhook calls.
+- **For high-value transactions** — Use `GET /GetTransaction` as the primary trigger for fulfilment logic rather than the browser redirect, which is vulnerable to the customer closing the tab.
+- **When `NotifyUrl` was down** — If your webhook endpoint was temporarily unavailable, poll this endpoint at a sensible interval (e.g. every 30 seconds for up to five minutes) to recover the transaction status.
+- **Before processing refunds** — Confirm the transaction is in `Complete` status via this endpoint before instructing Ozow to issue a refund.

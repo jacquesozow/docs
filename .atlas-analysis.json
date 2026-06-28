@@ -1,20 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "Ozow Hub",
+  "projectType": "saas",
+  "projectName": "Ozow Hub",
+  "projectDescription": "Ozow is a South African account-to-account payment platform enabling merchants to accept payments, process refunds, and make payouts via a simple API integration.",
   "theme": "luma",
-  "favicon": "https://media.brand.dev/e67582e0-1431-4d2c-a91f-91abbe102b5d.png",
-  "colors": {
-    "primary": "#04cb9c",
-    "light": "#04cb9c",
-    "dark": "#04cb9c"
-  },
-  "navbar": {
-    "primary": {
-      "type": "button",
-      "label": "Sign Up",
-      "href": "https://ozow.com/merchants"
-    }
-  },
+  "primaryColor": "#04cb9c",
+  "lightColor": null,
+  "darkColor": null,
   "navigation": {
     "tabs": [
       {
@@ -93,9 +84,27 @@
       }
     ]
   },
-  "footer": {
-    "socials": {
-      "website": "https://ozow.com"
-    }
-  }
+  "keyFeatures": [
+    "Pay by Bank (account-to-account EFT payments)",
+    "Real-Time Clearing (RTC) payouts",
+    "Automated refunds with partial/split support",
+    "Ozow ME peer-to-peer payments via QR, SMS, and WhatsApp",
+    "Pocket digital wallet with ATM withdrawals",
+    "Capitec Pay integration",
+    "OneAPI — unified REST API for all payment methods (Beta)",
+    "OAuth 2.0 and idempotency support in OneAPI",
+    "PCI DSS and ISO 27001 certified",
+    "Merchant Dashboard for transaction management and float top-up",
+    "Bank account CDV (Check Digit Verification)",
+    "Webhook notifications for async transaction outcomes"
+  ],
+  "publicApiSurface": [
+    "POST https://api.ozow.com/PostPaymentRequest",
+    "GET  https://api.ozow.com/GetTransactionStatus",
+    "POST https://api.ozow.com/PostRefundRequest",
+    "POST https://one.ozow.com (OneAPI — unified payments endpoint)",
+    "Refunds API — Authorization: Bearer token header",
+    "Payouts API — submit single payout, check payout status",
+    "Webhooks — transaction outcome notifications (complete, cancelled, expired)"
+  ]
 }

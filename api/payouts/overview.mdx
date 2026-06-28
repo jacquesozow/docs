@@ -1,0 +1,89 @@
+---
+title: "Payouts API Overview: Send Real-Time Bank Transfers"
+sidebarTitle: "Overview"
+description: "The Ozow Payouts API automates real-time bank account payouts via RTC. Fund withdrawals, refunds, and transfers directly from your merchant float, 24/7."
+---
+
+The Ozow Payouts API lets you programmatically send funds from your merchant float to any South African bank account, using Real-Time Clearing (RTC) to settle payments within minutes. Whether you're processing customer withdrawals, issuing refunds, or running automated disbursements, the API handles the entire lifecycle — from CDV account validation through to outcome notification — without any manual intervention. You submit one request per payout, and Ozow takes care of the rest around the clock, every day of the year except Sundays and public holidays.
+
+## Base URLs
+
+| Environment | Base URL |
+|-------------|----------|
+| Staging     | `https://stagingapi.ozow.com` |
+| Production  | `https://api.ozow.com` |
+
+<Note>
+  For new integrations, Ozow recommends [OneAPI](/api/oneapi/overview) as the unified entry point for payments and payouts. The Payouts API remains fully supported for existing integrations.
+</Note>
+
+## Payout types
+
+The API supports two payout methods, each suited to different use cases and urgency levels.
+
+| Type | Processing method | Best for |
+|------|-------------------|----------|
+| **Real-time (RTC)** | Clears within minutes via Real-Time Clearing | Urgent withdrawals, customer-facing payouts |
+| **Standard (EFT)** | Batch-processed overnight | Scheduled disbursements, non-time-sensitive transfers |
+
+## Processing windows
+
+Ozow processes payouts during the windows below. Requests submitted outside these windows are queued and processed at the next available opportunity.
+
+### Real-time (RTC)
+
+| Day | Window (CAT) |
+|-----|--------------|
+| Monday – Friday | 03:00 – 18:00 |
+| Saturday | 03:00 – 13:00 |
+| Sunday & public holidays | No processing |
+
+### Standard (EFT)
+
+Submit your payout **before 16:00 CAT**. Ozow batch-processes standard payouts overnight; funds are delivered by **09:00 the following business day**.
+
+<Note>
+  No standard payouts are processed on Sundays or South African public holidays.
+</Note>
+
+## Amount limits
+
+The maximum payout amount depends on when during the week you submit the request.
+
+| Window | Maximum per payout |
+|--------|--------------------|
+| Weekdays until 15:00 CAT | R 5,000,000 |
+| Weekdays after 15:00 CAT | R 250,000 |
+| Weekends (all hours) | R 250,000 |
+
+## Merchant float
+
+All payouts are funded from your Ozow merchant float balance. Ensure your float is sufficiently topped up before submitting payout requests. A payout will fail immediately if the float balance is insufficient to cover the requested amount.
+
+## CDV account validation
+
+Before Ozow submits a payout to the banking network, it automatically runs a **Check Digit Verification (CDV)** check on the recipient's bank details. CDV validates that the combination of the six-digit bank branch code and the account number satisfies the mathematical check-digit rules defined by each bank. This catches typos and transposed digits before any funds move.
+
+<Warning>
+  CDV confirms that the account number is *structurally valid* for the given branch code — it does not confirm that the account is open or active. Always collect recipient details carefully.
+</Warning>
+
+## One payout per request
+
+<Warning>
+  The Ozow Payouts API does **not** accept batch files. You must submit one payout per API call. If you need to send multiple payouts, queue them on your side and submit each request individually.
+</Warning>
+
+## Next steps
+
+<CardGroup cols={3}>
+  <Card title="Authentication" icon="key" href="/api/payouts/authentication">
+    Get a Bearer token using your API Key and Private Key to authorize all Payouts API requests.
+  </Card>
+  <Card title="Submit Payout" icon="paper-plane" href="/api/payouts/submit-payout">
+    POST to /PostPayoutRequest to send funds to a recipient's South African bank account.
+  </Card>
+  <Card title="Payout Status" icon="magnifying-glass" href="/api/payouts/payout-status">
+    GET /GetPayoutStatus to poll the current state of any previously submitted payout.
+  </Card>
+</CardGroup>

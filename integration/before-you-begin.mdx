@@ -1,0 +1,77 @@
+---
+title: "Before You Begin: Ozow Integration Prerequisites"
+sidebarTitle: "Prerequisites"
+description: "Gather your Ozow API credentials from the Merchant Dashboard before integrating. Covers staging and production account details for the Pay-in API."
+---
+
+Before you write a single line of integration code, make sure you have everything in place. Ozow's Pay-in API integration follows a clear three-step pattern — post payment information to Ozow, process the response your server receives, and optionally verify the final transaction status via API — and having the right credentials ready for each environment ensures you move smoothly from testing to production without scrambling for keys at the last moment.
+
+## Overview
+
+Integrating Ozow as a payment option on your website takes three steps:
+
+<Steps>
+  <Step title="Post Payment Information">
+    Send the payment request with your site credentials and order details to the Ozow API endpoint.
+  </Step>
+  <Step title="Process the Response">
+    Handle the redirect or notification response that Ozow sends back to your server after the customer completes (or abandons) payment.
+  </Step>
+  <Step title="Verify Transaction Status">
+    Call Ozow's status API to confirm the final outcome of the transaction. This step is optional but strongly recommended to guard against tampered redirects.
+  </Step>
+</Steps>
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- An active **Ozow merchant account** (contact [support@ozow.com](mailto:support@ozow.com) to sign up)
+- Access to the **Ozow Merchant Dashboard** — staging and production dashboards are separate
+- A basic understanding of **HTML and HTTP POST requests**, which are used to submit payment data to Ozow
+
+<Tip>
+  If you are starting a new custom integration, consider using the [OneAPI](/api/oneapi/overview) instead of the legacy Pay-in API. OneAPI provides broader payment method support and a more streamlined developer experience.
+</Tip>
+
+## Account Details
+
+Ozow provides two separate environments: **Staging** for testing and **Production** for live transactions. Keep your credentials for each environment strictly separated.
+
+### Test (Staging) Account Details
+
+Use these details when building and testing your integration. No real money moves in the staging environment.
+
+| Parameter | Value |
+|-----------|-------|
+| SiteCode | Retrieve from the [Staging Dashboard](https://stagingdash.ozow.com/MerchantAdmin/Site) |
+| CountryCode | ZA |
+| CurrencyCode | ZAR |
+| Private Key | Retrieve from the [Staging Dashboard](https://stagingdash.ozow.com/MerchantAdmin/Merchant/Details) |
+| API Key | Retrieve from the [Staging Dashboard](https://stagingdash.ozow.com/MerchantAdmin/Merchant/Details) |
+| API URL | `https://stagingapi.ozow.com/PostPaymentRequest` |
+
+### Live (Production) Account Details
+
+Use these details only after you have fully tested your integration in staging and are ready to accept real payments.
+
+| Parameter | Value |
+|-----------|-------|
+| SiteCode | Retrieve from the [Production Dashboard](https://dash.ozow.com/MerchantAdmin/Site) |
+| CountryCode | ZA |
+| CurrencyCode | ZAR |
+| Private Key | Retrieve from the [Production Dashboard](https://dash.ozow.com/MerchantAdmin/Merchant/Details) |
+| API Key | Retrieve from the [Production Dashboard](https://dash.ozow.com/MerchantAdmin/Merchant/Details) |
+| API URL | `https://api.ozow.com/PostPaymentRequest` |
+
+<Warning>
+  Always swap your staging credentials for live credentials before going live. Submitting production transactions with staging keys — or staging transactions with live keys — will cause payment failures and may compromise your account.
+</Warning>
+
+## Next Steps
+
+With your credentials in hand, you are ready to start building:
+
+<Card title="Post a Payment Request" icon="paper-plane" href="/api/payin/post-payment">
+  Learn how to construct and submit a payment POST request to the Ozow Pay-in API.
+</Card>

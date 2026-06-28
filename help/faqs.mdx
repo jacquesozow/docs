@@ -1,0 +1,142 @@
+---
+title: "Frequently Asked Questions About Ozow Hub Products"
+sidebarTitle: "FAQs"
+description: "Answers to common questions about Capitec Pay fees, Payout limits and float management, Ozow ME Scan to Pay, bank account linking, and selfie verification."
+---
+
+Whether you're a merchant trying to understand your fee package, a developer integrating payouts, or a consumer getting started with Ozow ME, this page brings together the questions our team hears most often. Browse the sections below to find accurate, up-to-date answers — and reach out to [support@ozow.com](mailto:support@ozow.com) if you need anything beyond what's covered here.
+
+---
+
+### Capitec Pay
+
+<AccordionGroup>
+  <Accordion title="Why has my business been placed under the new 1.5% fee package?">
+    Ozow has discontinued its previous tiered pricing model. The new standard package — set at **1.5%** per transaction — applies to all merchants who process under **R10 million per month**. This change simplifies billing and ensures consistent, predictable costs across the platform. If you believe your business has been categorised incorrectly, contact [support@ozow.com](mailto:support@ozow.com) with your merchant details.
+  </Accordion>
+
+  <Accordion title="Will Capitec Pay require an additional integration?">
+    No. You do not need to perform any additional integration work to offer Capitec Pay to your customers. Ozow has incorporated the Capitec Pay API directly into the standard payment flow, so your existing integration automatically includes it. Refer to the FAQs for new merchants and zero-fee merchants for any package-specific guidance.
+  </Accordion>
+
+  <Accordion title="Do I need the Capitec app to use Capitec Pay?">
+    Yes. To authenticate and approve a Capitec Pay payment, you need the **Capitec Bank app** installed on your smartphone. If you haven't already, download it from the [Google Play Store](https://play.google.com/store) or the [Apple App Store](https://www.apple.com/app-store/) and log in with your Capitec credentials before initiating a payment.
+  </Accordion>
+
+  <Accordion title="Can I manage the merchants I authorise on Capitec Pay?">
+    Yes — you have full control over which merchants are authorised to use Capitec Pay on your account. To review or revoke merchant permissions, follow these steps in the Capitec app:
+
+    1. Sign in to the **Capitec app**.
+    2. Tap **Transact**.
+    3. Tap **Capitec Pay**.
+    4. Tap **Manage Permissions**.
+    5. Review the list of authorised merchants and disable any you no longer want to allow.
+  </Accordion>
+
+  <Accordion title="On the payment flow, can I enter my cellphone number or ID number?">
+    When initiating a payment through Ozow, you enter your **cellphone number** — not your ID number. In some cases, Capitec's internal risk controls may prompt you to supply your ID number as an additional verification step, but this is the exception rather than the rule. Have both pieces of information available just in case.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+### Payouts
+
+<AccordionGroup>
+  <Accordion title="Are there any integration fees?">
+    No. Ozow does not charge any fees for integrating the Payouts API. You pay only the standard transaction fees once your integration is live and processing real payouts. For a full breakdown of fees, refer to your merchant agreement or contact [support@ozow.com](mailto:support@ozow.com).
+  </Accordion>
+
+  <Accordion title="What are the payout limits and processing times?">
+    The following rules govern RTC (Real-Time Clearing) payout processing:
+
+    | Day | Processing Window | Limit |
+    |---|---|---|
+    | Monday – Friday | 03:00 – 15:00 | R5 million per payout |
+    | Monday – Friday | 15:00 – 18:00 | R250 000 per payout |
+    | Saturday | 03:00 – 13:00 | Applies per payout |
+    | Sunday | — | No processing |
+    | Public Holidays | — | No processing |
+
+    - Payouts submitted outside processing windows are held and submitted to the bank on the **next processing day**.
+    - Ozow submits payout batches to the bank every **15 minutes** within active processing windows.
+    - Funds typically reflect in the recipient's account **within 1 hour** of Ozow's submission to the bank.
+    - Payout status is normally updated by **10:00 the following morning**, though in exceptional cases this may extend to end of business day.
+  </Accordion>
+
+  <Accordion title="Can I set a float balance alert?">
+    Yes. The **Float Balance Alert** feature notifies designated contacts by email whenever your float drops below a threshold you define. To configure it:
+
+    1. Log in to the [Merchant Dashboard](https://dash.ozow.com).
+    2. Navigate to **Merchant Details** and click **Edit Details**.
+    3. Enter your chosen **Float Balance Alert Amount** and click **Save**.
+    4. Go to the **Contacts** tab and click **Add Contact** (or edit an existing contact).
+    5. Fill in the contact's details, select the **Float Balance Alert** option, and click **Submit**.
+
+    Once set up, the contact receives an email notification each time your float balance falls below the configured amount.
+  </Accordion>
+
+  <Accordion title="Do you offer batch payout processing?">
+    Ozow's Payouts API does not accept batch files directly. However, you can build a queue of individual payout requests on your own back end and submit them one by one through the API — effectively running the batch logic on your side. Each request is processed as a single transaction, giving you real-time status updates per payout.
+  </Accordion>
+
+  <Accordion title="How do I top up my float?">
+    1. Log in to your Ozow Merchant Dashboard at [dash.ozow.com](https://dash.ozow.com).
+    2. Select **Floats** from the main menu, then click **Top Up Float**.
+    3. Note the **generated reference number** displayed on screen.
+    4. Make a bank transfer to the Ozow account, using that reference number as the payment reference.
+    5. Your float is credited **within a few hours** of the funds reflecting in Ozow's bank account.
+
+    For detailed step-by-step guidance, see the [Float Management](/help/float-management) page.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+### Ozow ME
+
+<AccordionGroup>
+  <Accordion title="How does Scan to Pay work?">
+    Scan to Pay lets you pay any merchant that displays an Ozow or Zapper QR code — directly from the Ozow ME app. Here's how:
+
+    1. Open **Ozow ME** and tap **Scan to Pay**.
+    2. Grant the app permission to access your camera when prompted.
+    3. Point your camera at the merchant's QR code to scan it.
+    4. Follow the on-screen prompts to confirm the payment amount and authorise the transaction.
+
+    Ozow ME works with **both Ozow and Zapper QR codes**, so you can use it at a wide range of participating merchants.
+  </Accordion>
+
+  <Accordion title="How does Get Paid work?">
+    Get Paid allows you to request money from someone using either a QR code or an SMS payment request. To use it:
+
+    1. Open **Ozow ME** and tap **Get Paid**.
+    2. Enter the payer's details and the amount they owe you.
+    3. Choose to generate a **unique QR code** for the payer to scan, or send them an **SMS payment request** directly to their phone.
+
+    The payer completes the transaction on their end and you receive the funds into your Ozow ME pocket.
+  </Accordion>
+
+  <Accordion title="How do I link my bank account?">
+    You link your bank account during the Ozow ME sign-up process. When prompted:
+
+    1. Select the **bank** you want to link.
+    2. Enter your **bank account number** and your **online banking password**.
+
+    That's all — your account is now linked and ready to use for withdrawals and payments.
+  </Accordion>
+
+  <Accordion title="Why is my selfie verification failing?">
+    Selfie verification cross-references the photo and ID number you provide against records held in the **Department of Home Affairs database**. If your selfie or ID number doesn't match those records — for example due to an outdated photo on file, a typographical error in your ID number, or a poor-quality image — verification will fail. Double-check that your ID number is correct and that your selfie is clear, well-lit, and unobstructed. If the problem persists, contact [support@ozow.com](mailto:support@ozow.com) for assistance.
+  </Accordion>
+
+  <Accordion title="How do I withdraw from my Ozow ME pocket?">
+    1. On the **Pocket home screen**, tap the **dropdown arrow** next to your pocket balance.
+    2. Select **Withdrawal**.
+    3. Enter the **amount** you wish to withdraw.
+    4. Choose your preferred withdrawal method:
+       - **EFT** — funds transfer electronically into your linked bank account.
+       - **Cash Express ATM** — collect cash at a Cash Express ATM.
+       - **Pick n Pay till point** — collect cash at a Pick n Pay store.
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,101 @@
+---
+title: "POST /v1/payments/{id}/refunds — Refund via OneAPI"
+sidebarTitle: "Refunds"
+description: "Refund a completed Ozow OneAPI payment — full or partial. POST to /v1/payments/{paymentId}/refunds with the amount in cents and an idempotency key."
+---
+
+Once a OneAPI payment reaches `COMPLETE` status, you can refund it — in full or partially — using a single endpoint. Ozow draws the refund amount from your merchant float balance and returns the funds to the original payer. You can issue multiple partial refunds against the same payment as long as the cumulative refund total does not exceed the original payment amount, giving you fine-grained control over customer returns and dispute resolution.
+
+## Endpoint
+
+```
+POST https://one.ozow.com/v1/payments/{paymentId}/refunds
+```
+
+**Staging:** `POST https://stagingone.ozow.com/v1/payments/{paymentId}/refunds`
+
+Replace `{paymentId}` in the URL path with the `paymentId` returned when you created the original payment (e.g., `pay_xyz789`).
+
+## Required headers
+
+| Header | Value |
+|---|---|
+| `Authorization` | `Bearer {your-access-token}` — must include the `refund` scope |
+| `Content-Type` | `application/json` |
+| `Idempotency-Key` | A unique UUID for this refund request |
+
+Include a fresh `Idempotency-Key` for each distinct refund. If you retry the same refund due to a network failure, reuse the same key so OneAPI returns the original result instead of creating a duplicate.
+
+## Request body
+
+<ParamField body="amount" type="integer" required>
+  Amount to refund in **cents**. Pass the full original amount for a complete refund (e.g., `10000` for R100.00), or a smaller value for a partial refund. The cumulative total of all refunds against a single payment cannot exceed the original payment amount.
+</ParamField>
+
+<ParamField body="reason" type="string">
+  A human-readable explanation for the refund (e.g., `"Customer request"`, `"Item out of stock"`). While optional, providing a reason improves traceability in your Ozow Dashboard and settlement records.
+</ParamField>
+
+<ParamField body="merchantReference" type="string">
+  Your own reference for this refund transaction (e.g., `REFUND-001`). Use this to correlate the refund with your internal records. Must be unique per refund request.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="refundId" type="string">
+  Ozow's unique identifier for this refund (e.g., `ref_abc123`). Store this for reconciliation and status queries.
+</ResponseField>
+
+<ResponseField name="paymentId" type="string">
+  The `paymentId` of the original payment this refund is applied against.
+</ResponseField>
+
+<ResponseField name="amount" type="integer">
+  The refund amount in cents, confirming what was submitted in your request.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current refund status. Possible values: `PENDING`, `COMPLETE`, `FAILED`. Refunds typically move to `COMPLETE` within one business day, subject to your bank's processing times.
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  ISO 8601 timestamp indicating when the refund was created (e.g., `2024-01-15T11:00:00Z`).
+</ResponseField>
+
+## Example
+
+```bash
+curl -X POST https://one.ozow.com/v1/payments/pay_xyz789/refunds \
+  -H 'Authorization: Bearer your-access-token' \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: ref-idempotency-001' \
+  -d '{
+    "amount": 5000,
+    "reason": "Customer request",
+    "merchantReference": "REFUND-001"
+  }'
+```
+
+```json Response
+{
+  "refundId": "ref_abc123",
+  "paymentId": "pay_xyz789",
+  "amount": 5000,
+  "status": "PENDING",
+  "createdAt": "2024-01-15T11:00:00Z"
+}
+```
+
+## Partial refunds
+
+You can submit multiple partial refund requests against a single payment. For example, if the original payment was R100.00 (`10000` cents), you could issue:
+
+1. A first refund of R50.00 (`5000` cents) — `REFUND-001`
+2. A second refund of R30.00 (`3000` cents) — `REFUND-002`
+3. A third refund of up to R20.00 (`2000` cents) — `REFUND-003`
+
+Each partial refund requires its own unique `Idempotency-Key` and, optionally, its own `merchantReference`.
+
+<Note>
+  Refunds are drawn from your **merchant float balance**. Ensure your float is sufficiently topped up before initiating refunds, especially in high-volume or bulk-refund scenarios. Visit your Ozow Dashboard to manage your float balance — see the float management section in the help centre for guidance.
+</Note>

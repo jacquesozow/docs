@@ -1,0 +1,140 @@
+---
+title: "POST /v1/payments — Create an Ozow OneAPI Payment"
+sidebarTitle: "Payments"
+description: "POST /v1/payments initiates a payment via OneAPI. Supports Instant EFT, Cards, Capitec Pay, and more. Returns a payment ID and optional redirect URL."
+---
+
+OneAPI consolidates every Ozow payment method behind a single endpoint — `POST /v1/payments`. You specify the method you want in the request body, and OneAPI returns either a `paymentUrl` to redirect your customer to (for browser-redirect methods like Instant EFT and Capitec Pay) or the data needed for a direct in-page flow (for Cards, ABSA Pay, and Nedbank Direct EFT). One integration, every method, no juggling separate SDKs or endpoints.
+
+## Endpoint
+
+```
+POST https://one.ozow.com/v1/payments
+```
+
+**Staging:** `POST https://stagingone.ozow.com/v1/payments`
+
+## Required headers
+
+| Header | Value |
+|---|---|
+| `Authorization` | `Bearer {your-access-token}` |
+| `Content-Type` | `application/json` |
+| `Idempotency-Key` | A unique UUID for this payment request |
+
+<Tip>
+  Always include an `Idempotency-Key` on payment creation requests. If a network timeout occurs and you retry the request with the same key, OneAPI returns the original result instead of creating a duplicate payment.
+</Tip>
+
+## Request body
+
+<ParamField body="paymentMethod" type="string" required>
+  The payment method to use. Accepted values: `INSTANT_EFT`, `CARD`, `CAPITEC_PAY`, `BANK_DEPOSIT`, `VOUCHER`, `NEDBANK_DIRECT_EFT`, `ABSA_PAY`.
+</ParamField>
+
+<ParamField body="amount" type="integer" required>
+  Payment amount in **cents**. For example, pass `10000` for R100.00. Must be a positive integer greater than zero.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  Currency code. Currently only `ZAR` (South African Rand) is supported.
+</ParamField>
+
+<ParamField body="merchantReference" type="string" required>
+  Your unique reference for this payment (maximum 50 characters). Use this to correlate the payment with your own order or transaction records. Must be unique per payment request.
+</ParamField>
+
+<ParamField body="description" type="string" required>
+  A human-readable description of the payment shown to your customer (e.g., `"Payment for Order #98765"`).
+</ParamField>
+
+<ParamField body="returnUrl" type="string" required>
+  The URL OneAPI redirects your customer to after the payment completes, fails, or is cancelled. Include enough query-string context (e.g., your order ID) to handle the result on your side.
+</ParamField>
+
+<ParamField body="notifyUrl" type="string">
+  Your webhook endpoint URL. OneAPI sends a signed HTTP POST to this URL when the payment status changes. See [Webhooks](/api/oneapi/webhooks) for payload details and signature verification.
+</ParamField>
+
+<ParamField body="customer" type="object">
+  Optional customer details to associate with the payment.
+
+  <Expandable title="customer fields">
+    <ParamField body="customer.name" type="string">
+      Customer's full name.
+    </ParamField>
+    <ParamField body="customer.email" type="string">
+      Customer's email address.
+    </ParamField>
+    <ParamField body="customer.phone" type="string">
+      Customer's phone number in E.164 format (e.g., `+27821234567`).
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  An arbitrary key-value object you want attached to this payment. OneAPI passes all metadata through to webhook notifications, making it easy to carry your internal context without storing it separately.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="paymentId" type="string">
+  Ozow's globally unique identifier for this payment (e.g., `pay_xyz789`). Store this value — you'll need it to query status, issue refunds, and correlate webhooks.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current payment status. Possible values: `PENDING`, `COMPLETE`, `FAILED`, `CANCELLED`.
+</ResponseField>
+
+<ResponseField name="paymentUrl" type="string">
+  Present for redirect-based payment methods (`INSTANT_EFT`, `CAPITEC_PAY`, `BANK_DEPOSIT`, `VOUCHER`). Redirect your customer's browser to this URL to complete the payment on the Ozow-hosted page.
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  ISO 8601 timestamp indicating when the payment was created (e.g., `2024-01-15T10:30:00Z`).
+</ResponseField>
+
+## Redirect vs direct payment flows
+
+OneAPI supports two distinct completion flows depending on the payment method you choose:
+
+- **Redirect flow** (`INSTANT_EFT`, `CAPITEC_PAY`, `BANK_DEPOSIT`, `VOUCHER`): The response includes a `paymentUrl`. Redirect your customer's browser to that URL. Ozow hosts the payment page and redirects back to your `returnUrl` when done.
+- **Direct flow** (`CARD`, `ABSA_PAY`, `NEDBANK_DIRECT_EFT`): The response returns data you use to render an in-page form or submit directly. Your customer never leaves your site or app.
+
+## Example
+
+<CodeGroup>
+
+```json Request
+{
+  "paymentMethod": "INSTANT_EFT",
+  "amount": 10000,
+  "currency": "ZAR",
+  "merchantReference": "ORDER-98765",
+  "description": "Payment for Order #98765",
+  "returnUrl": "https://yourstore.com/payment/return",
+  "notifyUrl": "https://yourstore.com/webhooks/ozow",
+  "customer": {
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "phone": "+27821234567"
+  },
+  "metadata": {
+    "internalOrderId": "98765",
+    "channel": "web"
+  }
+}
+```
+
+```json Response
+{
+  "paymentId": "pay_xyz789",
+  "status": "PENDING",
+  "paymentUrl": "https://one.ozow.com/pay/pay_xyz789",
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+</CodeGroup>
+
+After receiving the response, redirect your customer to the `paymentUrl`. OneAPI will notify your `notifyUrl` webhook and redirect the customer back to your `returnUrl` once the payment resolves.

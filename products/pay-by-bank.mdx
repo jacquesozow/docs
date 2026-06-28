@@ -1,0 +1,96 @@
+---
+title: "Pay by Bank: Instant EFT Payments with Ozow"
+sidebarTitle: "Pay by Bank"
+description: "Accept instant account-to-account EFT payments with Ozow Pay by Bank. Customers pay directly from their internet banking in four simple steps."
+---
+
+Ozow Pay by Bank is an account-to-account EFT solution that lets your customers pay you directly from their internet banking — no card details, no delays, and no third-party intermediaries. All a customer needs is a smartphone and an internet-banking-enabled bank account. Once they select Ozow at checkout, the entire payment flow completes in four guided steps, and both you and your customer receive instant confirmation of the outcome.
+
+## Requirements
+
+Before a customer can pay using Pay by Bank, they need:
+
+<CardGroup cols={2}>
+  <Card title="Internet Banking Account" icon="building-columns">
+    An active bank account with online (internet) banking enabled at their South African bank.
+  </Card>
+  <Card title="Smart Device" icon="mobile">
+    A smartphone or tablet capable of receiving their bank's two-factor authentication (2FA) request.
+  </Card>
+</CardGroup>
+
+## The Four-Step Payment Flow
+
+From the moment a customer clicks **Pay with Ozow**, the entire process is guided and takes under a minute.
+
+<Steps>
+  <Step title="Select Ozow">
+    The customer selects Ozow as their payment method on your checkout page.
+  </Step>
+  <Step title="Select Their Bank">
+    The customer chooses their South African bank from the list of supported institutions displayed on the Ozow payment gateway.
+  </Step>
+  <Step title="Log In and Select Account">
+    The customer logs in to their internet banking and selects the account they want to pay from. Ozow displays the purchase amount and your merchant reference at all times.
+  </Step>
+  <Step title="Authorise with 2FA">
+    The customer accepts their bank's authorisation request (two-factor authentication). Once confirmed, the payment is complete and funds move instantly.
+  </Step>
+</Steps>
+
+## User Experience Flow
+
+Understanding the full merchant-side flow helps you integrate Pay by Bank cleanly and set the right expectations for your customers.
+
+1. **You display the Ozow payment button** at checkout. When your customer is ready to pay, they click the Ozow-approved button on your checkout page.
+2. **You send a secure POST request** to the Ozow service, including the relevant security parameters, purchase amount, and reference details.
+3. **The customer is redirected to the Ozow gateway**, where they see your merchant logo (if configured), the purchase amount, and the reference number.
+4. **The customer completes 2FA** through their bank's authentication mechanism.
+5. **The customer is redirected back to your site.** If payment was successful, your confirmation page is shown. If unsuccessful, the customer is notified and prompted to try again or cancel.
+
+## Webhook Notifications
+
+If you include a notification URL in your initial POST request, Ozow sends a server-to-server webhook to your endpoint as soon as an outcome is determined. The notification payload contains the full details of the transaction, including its final status.
+
+<CardGroup cols={3}>
+  <Card title="Complete" icon="circle-check" color="#16a34a">
+    Payment was successfully authorised and funds have moved.
+  </Card>
+  <Card title="Cancelled" icon="circle-xmark" color="#dc2626">
+    The customer cancelled before completing authorisation.
+  </Card>
+  <Card title="Expired" icon="clock" color="#d97706">
+    The session timed out before the customer completed the flow.
+  </Card>
+</CardGroup>
+
+<Note>
+  Your webhook endpoint must be publicly accessible and return an HTTP `200` response to acknowledge receipt. Ozow retries delivery if no acknowledgement is received.
+</Note>
+
+## Example Use Cases
+
+Pay by Bank is versatile enough to power payments across a wide range of industries and scenarios.
+
+<AccordionGroup>
+  <Accordion title="eCommerce" icon="cart-shopping">
+    Enable Pay by Bank at your online store checkout — just like Takealot — and let customers complete purchases directly from their bank account without entering card details. Ozow handles the secure connection between your platform and the customer's bank.
+  </Accordion>
+  <Accordion title="e-Billing" icon="file-invoice">
+    Include an Ozow payment link in any digital invoice or statement. Your customers click the link, complete the four-step flow, and your system receives instant confirmation — no manual reconciliation required.
+  </Accordion>
+  <Accordion title="Municipal Fine Payments" icon="landmark">
+    Connect Pay by Bank to your municipal billing portal so residents can pay traffic fines, rates, and utility bills online via their internet banking, with automatic receipting handled by the Ozow webhook.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Pay-in API Docs" icon="code" href="/api/payin/overview">
+    Integrate Pay by Bank into your platform using the Pay-in API. Review endpoints, request parameters, and response schemas.
+  </Card>
+  <Card title="Frequently Asked Questions" icon="circle-question" href="/help/faqs">
+    Find answers to common questions about Pay by Bank, transaction statuses, and troubleshooting.
+  </Card>
+</CardGroup>

@@ -1,0 +1,69 @@
+---
+title: "Authenticate Ozow Payouts API with Bearer Tokens"
+sidebarTitle: "Authentication"
+description: "The Ozow Payouts API uses Bearer token authentication. Exchange your API Key and Private Key for a token, then pass it in the Authorization header."
+---
+
+Every request to the Ozow Payouts API (except the token endpoint itself) must include a valid Bearer token in the `Authorization` header. You generate this token by calling the `GET /GetToken` endpoint with your API Key and the request hash derived from your Private Key. Tokens are scoped to your merchant account and must be generated server-side — never in browser or mobile client code where they could be intercepted. Once you have a token, you attach it to all subsequent payout requests until it expires, at which point you request a new one.
+
+## Prerequisites
+
+Retrieve the following credentials from your [Ozow Merchant Dashboard](https://dash.ozow.com/MerchantAdmin/Merchant/Details) before you begin:
+
+- **API Key** — identifies your merchant account on each request
+- **Private Key** — used to sign requests and must never be exposed publicly
+
+## Token endpoint
+
+| Environment | URL |
+|-------------|-----|
+| Staging     | `GET https://stagingapi.ozow.com/GetToken` |
+| Production  | `GET https://api.ozow.com/GetToken` |
+
+## Step 1 — Request a Bearer token
+
+Call `GET /GetToken`, passing your API Key in the `ApiKey` header and a hash of your request payload (signed with your Private Key) in the `Hash` header.
+
+```bash
+curl -X GET 'https://api.ozow.com/GetToken' \
+  -H 'ApiKey: your-api-key' \
+  -H 'Hash: your-request-hash'
+```
+
+A successful response returns a Bearer token string that you store server-side for use in subsequent requests.
+
+## Step 2 — Add the token to Payouts API requests
+
+Pass the token as a Bearer credential in the `Authorization` header on every call to `/PostPayoutRequest` and `/GetPayoutStatus`.
+
+```bash
+curl -X POST 'https://api.ozow.com/PostPayoutRequest' \
+  -H 'Authorization: Bearer your-token' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{...}'
+```
+
+## Required headers
+
+The table below lists the headers required on all Payouts API requests (excluding `/GetToken` itself).
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token obtained from the `GET /GetToken` endpoint. Format: `Bearer {token}`.
+</ParamField>
+
+<ParamField header="Accept" type="string" required>
+  Desired response format. Accepted values: `application/json`, `application/xml`.
+</ParamField>
+
+<ParamField header="Content-Type" type="string">
+  Format of the request body. Accepted values: `application/json`, `application/x-www-form-urlencoded`. Required when sending a request body (e.g. `POST /PostPayoutRequest`).
+</ParamField>
+
+<Warning>
+  Never expose your Private Key or Bearer token in client-side JavaScript, mobile app binaries, or any publicly accessible code. Generate tokens exclusively on your backend server and proxy all Payouts API calls through it.
+</Warning>
+
+## Token expiry and refresh
+
+Bearer tokens are time-limited. If a request returns an `HTTP 401 Unauthorized` response, your token has expired. Call `GET /GetToken` again to obtain a fresh token, then retry the original request.

@@ -1,0 +1,76 @@
+---
+title: "OneAPI: Ozow's Unified Payment API (Beta)"
+sidebarTitle: "Overview"
+description: "Ozow OneAPI is a single REST endpoint for all payment methods — EFT, Cards, Capitec Pay, and more. Uses OAuth 2.0, idempotency, and RESTful design."
+---
+
+Ozow OneAPI is a single, modern REST API that consolidates every Ozow payment service under one roof. Rather than managing separate integrations for pay-ins, payouts, and verification, you interact with a single endpoint that speaks JSON, respects standard HTTP verbs and status codes, and authenticates via industry-standard OAuth 2.0. Whether you're launching a new integration or migrating an existing one, OneAPI gives you a future-proof foundation that automatically gains access to new payment methods as Ozow rolls them out — no re-integration required.
+
+## Supported operations
+
+OneAPI covers the full payments lifecycle in a single endpoint:
+
+- **Payment processing** — Instant EFT, Cards, Capitec Pay, Bank Deposits, Vouchers, Nedbank Direct EFT, ABSA Pay
+- **Bank account verification** — Check Digit Verification (CDV) and Bank Account Verification
+- **Refunds** — full and partial refunds against completed payments
+- **Settlements** — access and query your settlement data
+- **Webhooks** — asynchronous HTTP notifications for payment and refund events
+
+## Environments
+
+Use the staging environment for all development and testing. Switch to production only when you're ready to process live payments.
+
+| Environment | URL |
+|---|---|
+| OneAPI — Production | https://one.ozow.com |
+| OneAPI — Staging | https://stagingone.ozow.com |
+| Dashboard — Production | https://dash.ozow.com |
+| Dashboard — Staging | https://stagingdash.ozow.com |
+
+## Why OneAPI?
+
+### 1. Unified API
+All Ozow integrations — payments, refunds, verification, settlements — live behind a single endpoint. You maintain one integration, one auth flow, and one set of documentation.
+
+### 2. OAuth 2.0 security
+OneAPI uses the OAuth 2.0 Client Credentials flow with well-defined permission scopes (`payment`, `refund`, `settlements`, `verification`). This replaces older ad-hoc credential schemes with a widely understood, auditable standard.
+
+### 3. Idempotency
+Include an `Idempotency-Key` header on any POST request to guarantee that network retries never create duplicate charges or duplicate refunds. OneAPI stores the result of the first request and returns it on every subsequent retry with the same key.
+
+### 4. RESTful design
+Predictable, resource-oriented URLs. JSON request and response bodies. Standard HTTP status codes (`200`, `201`, `400`, `401`, `422`, `500`). Consistent naming conventions across every endpoint.
+
+### 5. Future-proof
+When Ozow adds a new payment method or feature, your existing integration gains access automatically. Pass the correct parameters for the new method — no structural re-integration needed.
+
+### 6. Direct payment flows
+For supported methods (Cards, ABSA Pay, Nedbank Direct EFT), you can collect and process payment details directly within your own UI without redirecting customers to an external page.
+
+### 7. Better developer experience
+Uniform field names and data structures, clear and descriptive error responses, and thorough documentation reduce the time it takes to integrate and debug.
+
+## Prerequisites
+
+Before using OneAPI you must be a registered Ozow merchant with a valid login for the Ozow Dashboard. Use the links in the table above to access the production or staging dashboard. If you need help with merchant registration, contact the Ozow support team at [support@ozow.com](mailto:support@ozow.com).
+
+<Warning>
+  The legacy Ozow APIs (Pay-in, Payouts) will eventually be deprecated. All new features and payment methods will be introduced exclusively in OneAPI. Ozow strongly recommends migrating existing integrations to OneAPI and starting all new integrations here.
+</Warning>
+
+## Explore OneAPI
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="lock" href="/api/oneapi/authentication">
+    Set up OAuth 2.0 Client Credentials and retrieve your Bearer token.
+  </Card>
+  <Card title="Payments" icon="credit-card" href="/api/oneapi/payments">
+    Initiate payments across all supported methods with a single endpoint.
+  </Card>
+  <Card title="Refunds" icon="rotate-left" href="/api/oneapi/refunds">
+    Issue full or partial refunds against completed OneAPI payments.
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api/oneapi/webhooks">
+    Receive signed, real-time notifications for payment and refund events.
+  </Card>
+</CardGroup>

@@ -1,0 +1,109 @@
+---
+title: "Get Started: Integrate Ozow Payments in Three Steps"
+sidebarTitle: "Quick Start"
+description: "Learn how to integrate Ozow payments into your website in three steps — post a payment, handle the response, and verify the transaction."
+---
+
+Integrating Ozow into your website or application is a three-step process: you post a payment request to Ozow, handle the response Ozow sends back to your server, and optionally verify the final transaction status via the API. This guide walks you through each step using the staging environment so you can test safely before going live — no real funds are moved until you switch to your live credentials.
+
+## Prerequisites
+
+<Note>
+  Before you begin, you need an active Ozow merchant account. Once registered, log in to your dashboard to retrieve your **SiteCode**, **Private Key**, and **API Key** — you'll need all three to authenticate your requests.
+
+  - **Staging dashboard:** [stagingdash.ozow.com](https://stagingdash.ozow.com)
+  - **Live dashboard:** [dash.ozow.com](https://dash.ozow.com)
+</Note>
+
+## Your Integration Credentials
+
+Every request to Ozow must be authenticated using the credentials tied to your merchant site. Retrieve these from your dashboard and keep them secure — never expose your Private Key or API Key in client-side code.
+
+| Credential | Description | Example Value |
+|---|---|---|
+| `SiteCode` | Unique identifier for your merchant site | `TST-TST-001` |
+| `CountryCode` | ISO 3166-1 alpha-2 country code | `ZA` |
+| `CurrencyCode` | ISO 4217 currency code | `ZAR` |
+| `PrivateKey` | Used to generate the hash signature on each request | *(from dashboard)* |
+| `ApiKey` | Bearer token for direct API calls | *(from dashboard)* |
+
+## Integration Steps
+
+<Steps>
+  <Step title="Post Payment Information to Ozow">
+    Send a `POST` request to the Ozow payment endpoint with your transaction details. Ozow validates the request, creates a payment session, and returns a redirect URL that you send your customer to — they complete the bank authentication on Ozow's hosted page.
+
+    **Staging endpoint:** `https://stagingapi.ozow.com/PostPaymentRequest`  
+    **Live endpoint:** `https://api.ozow.com/PostPaymentRequest`
+
+    The request body must include your site credentials, the transaction amount, a unique transaction reference, and a SHA-512 hash of the request fields signed with your Private Key. The `CancelUrl`, `ErrorUrl`, and `SuccessUrl` fields tell Ozow where to redirect the customer after each outcome.
+
+    ```bash
+    curl --request POST \
+      --url https://stagingapi.ozow.com/PostPaymentRequest \
+      --header 'Accept: application/json' \
+      --header 'ApiKey: YOUR_API_KEY' \
+      --header 'Content-Type: application/x-www-form-urlencoded' \
+      --data-urlencode 'SiteCode=YOUR_SITE_CODE' \
+      --data-urlencode 'CountryCode=ZA' \
+      --data-urlencode 'CurrencyCode=ZAR' \
+      --data-urlencode 'Amount=100.00' \
+      --data-urlencode 'TransactionReference=YOUR_UNIQUE_REF' \
+      --data-urlencode 'BankReference=ORDER-12345' \
+      --data-urlencode 'CancelUrl=https://yoursite.com/cancel' \
+      --data-urlencode 'ErrorUrl=https://yoursite.com/error' \
+      --data-urlencode 'SuccessUrl=https://yoursite.com/success' \
+      --data-urlencode 'IsTest=true' \
+      --data-urlencode 'HashCheck=YOUR_GENERATED_HASH'
+    ```
+
+    A successful response returns a `paymentRequestId` and a `url` — redirect your customer to that URL to begin the payment flow.
+  </Step>
+
+  <Step title="Process the Response from Ozow">
+    After the customer completes (or abandons) their payment, Ozow sends a `POST` notification to your `SuccessUrl`, `CancelUrl`, or `ErrorUrl` containing the transaction result. Your server must validate the `HashCheck` field in this notification against your own computed hash using your Private Key — this proves the response genuinely came from Ozow and has not been tampered with.
+
+    The notification payload includes:
+
+    - `SiteCode` — your merchant site identifier
+    - `TransactionId` — Ozow's unique transaction identifier
+    - `TransactionReference` — the reference you submitted in step 1
+    - `Amount` — the transaction amount
+    - `Status` — `Complete`, `Cancelled`, or `Error`
+    - `HashCheck` — SHA-512 hash for verification
+
+    Only mark an order as paid in your system **after** you have successfully verified the `HashCheck`. Never rely solely on the redirect URL the customer returns on — always validate the server-side notification.
+  </Step>
+
+  <Step title="Verify Transaction Status via the API (Recommended)">
+    For an additional layer of confidence — especially for high-value orders — you can proactively query the transaction status directly from Ozow's API rather than relying on the inbound notification alone. This is particularly useful if a network interruption prevents your server from receiving the step 2 notification.
+
+    ```bash
+    curl --request GET \
+      --url 'https://stagingapi.ozow.com/GetTransactionByReference?siteCode=YOUR_SITE_CODE&transactionReference=YOUR_UNIQUE_REF' \
+      --header 'Accept: application/json' \
+      --header 'ApiKey: YOUR_API_KEY'
+    ```
+
+    The response returns the current `status` of the transaction. If the status is `Complete`, you can safely fulfil the order. Reconcile this response against the notification you received in step 2 to ensure consistency before updating your order management system.
+  </Step>
+</Steps>
+
+## Before Going Live
+
+<Warning>
+  Always replace your **staging credentials** (SiteCode, Private Key, API Key) with your **live credentials** from [dash.ozow.com](https://dash.ozow.com) before deploying to production. Also update all API endpoint URLs from `stagingapi.ozow.com` to `api.ozow.com`. Transactions posted to the staging environment with `IsTest=true` will never settle real funds, even if you use live credentials.
+</Warning>
+
+## Next Steps
+
+<Tip>
+  Ozow recommends migrating to the [OneAPI](api/oneapi/overview) for all new integrations. OneAPI consolidates Pay-In, Payouts, and Refunds under a single, modernised API surface with improved authentication, consistent response schemas, and long-term support. If you're starting a brand-new integration, OneAPI is the future-proof choice.
+</Tip>
+
+Once your payment flow is working end-to-end in staging, explore these resources to round out your integration:
+
+- **[Pay-In API Reference](api/payin/overview)** — full endpoint documentation, field descriptions, and hash-generation examples
+- **[Payouts](products/payouts)** — disburse funds directly to customer bank accounts
+- **[Refunds](products/refunds)** — automate the refund process without manual intervention
+- **[OneAPI Overview](api/oneapi/overview)** — the recommended path for all new and future integrations

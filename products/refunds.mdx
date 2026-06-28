@@ -1,0 +1,79 @@
+---
+title: "Process Refunds with Ozow: Full and Partial"
+sidebarTitle: "Refunds"
+description: "Issue instant full or partial refunds through the Ozow Merchant Dashboard — no customer banking details required, using your Ozow float."
+---
+
+Ozow Refunds lets you return funds to customers instantly, using the same platform the original payment was made on — no need to ask your customer for banking details, account numbers, or branch codes. Because Ozow already holds the payment context from the original transaction, the refund routes back to the correct account automatically. You can issue a full refund or split it into multiple partial refunds, giving you the flexibility to handle disputes, promotions, or partial cancellations without any manual banking work.
+
+## Prerequisites
+
+Before you can issue a refund, confirm the following:
+
+<CardGroup cols={2}>
+  <Card title="Refunds Enabled" icon="toggle-on">
+    Refunds must be enabled for your merchant site. Contact Ozow support if the Refund button is not visible in your dashboard.
+  </Card>
+  <Card title="Float Funded" icon="wallet">
+    Refunds are drawn from your Ozow float balance. Ensure your float holds sufficient funds before processing. A refund will fail if your float balance is insufficient.
+  </Card>
+</CardGroup>
+
+<Info>
+  Your Ozow float is a shared balance used for both payouts and refunds. Monitor it regularly in the Merchant Dashboard to avoid interruptions.
+</Info>
+
+## Partial and Split Refunds
+
+You are not limited to refunding the full transaction amount. Ozow supports **partial refunds**, where only a portion of the original amount is returned, and **split refunds**, where you issue multiple partial refunds against a single transaction — as long as the cumulative total does not exceed the original transaction value.
+
+<Tip>
+  Use split refunds when a customer returns items from a larger order across separate occasions, or when you need to apply a partial credit before issuing the remainder at a later stage.
+</Tip>
+
+## How to Process a Refund
+
+Follow these seven steps in the Merchant Dashboard to issue a refund against a completed transaction.
+
+<Steps>
+  <Step title="Log in to the Merchant Dashboard">
+    Navigate to the Ozow Merchant Dashboard and sign in with your merchant credentials.
+  </Step>
+  <Step title="Open the Transactions Menu">
+    Select **Transactions** from the main navigation menu. Use the search and filter tools to locate the transaction you want to refund. Make sure the transaction **Status** is set to **Complete** — only completed transactions are eligible for refunds.
+  </Step>
+  <Step title="Select the Transaction">
+    Click the transaction row to open the transaction detail view.
+  </Step>
+  <Step title="Click Refund or Manual Refund">
+    Select the **Refund** button (for standard refunds) or the **Manual Refund** button (if the standard refund option is unavailable for that transaction type). Both buttons initiate the same refund flow.
+  </Step>
+  <Step title="Complete the Refund Details and Submit">
+    Enter the refund amount — either the full transaction amount or a partial amount — along with any required reference fields. Click **Submit** to send the refund request to Ozow for processing.
+  </Step>
+  <Step title="Navigate to the Refund Menu">
+    Once submitted, go to the **Refund** section in the main navigation to track the status of your refund request.
+  </Step>
+  <Step title="View the Refunds List">
+    The Refunds list displays all refunds associated with your merchant account, including their current status. You can confirm that your refund was received and is being processed here.
+  </Step>
+</Steps>
+
+## Float and Refund Funding
+
+Every refund you issue is drawn directly from your **Ozow float balance**. The float acts as a prepaid pool of funds that powers both refunds and payouts. If your float is unfunded or has an insufficient balance, the refund request will not process.
+
+<Warning>
+  Always verify your float balance before running a batch of refunds. A failed refund due to insufficient float does not automatically retry — you will need to resubmit once your float is topped up.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Float Management" icon="coins" href="/help/float-management">
+    Learn how to top up and manage your Ozow float to keep refunds and payouts running without interruption.
+  </Card>
+  <Card title="Pay-in API Overview" icon="code" href="/api/payin/overview">
+    Explore the API if you want to trigger refunds programmatically rather than through the Merchant Dashboard.
+  </Card>
+</CardGroup>
