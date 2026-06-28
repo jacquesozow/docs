@@ -80,7 +80,7 @@ Every request to Ozow must be authenticated using the credentials tied to your m
 
     ```bash
     curl --request GET \
-      --url 'https://stagingapi.ozow.com/GetTransactionByReference?siteCode=YOUR_SITE_CODE&transactionReference=YOUR_UNIQUE_REF' \
+      --url 'https://stagingapi.ozow.com/GetTransactionStatus?siteCode=YOUR_SITE_CODE&transactionReference=YOUR_UNIQUE_REF' \
       --header 'Accept: application/json' \
       --header 'ApiKey: YOUR_API_KEY'
     ```
@@ -98,12 +98,12 @@ Every request to Ozow must be authenticated using the credentials tied to your m
 ## Next Steps
 
 <Tip>
-  Ozow recommends migrating to the [OneAPI](api/oneapi/overview) for all new integrations. OneAPI consolidates Pay-In, Payouts, and Refunds under a single, modernised API surface with improved authentication, consistent response schemas, and long-term support. If you're starting a brand-new integration, OneAPI is the future-proof choice.
+  Ozow recommends migrating to the [OneAPI](/api/oneapi/overview) for all new integrations. OneAPI consolidates Pay-In, Payouts, and Refunds under a single, modernised API surface with improved authentication, consistent response schemas, and long-term support. If you're starting a brand-new integration, OneAPI is the future-proof choice.
 </Tip>
 
 Once your payment flow is working end-to-end in staging, explore these resources to round out your integration:
 
-- **[Pay-In API Reference](api/payin/overview)** — full endpoint documentation, field descriptions, and hash-generation examples
-- **[Payouts](products/payouts)** — disburse funds directly to customer bank accounts
-- **[Refunds](products/refunds)** — automate the refund process without manual intervention
-- **[OneAPI Overview](api/oneapi/overview)** — the recommended path for all new and future integrations
+- **[Pay-In API Reference](/api/payin/overview)** — full endpoint documentation, field descriptions, and hash-generation examples
+- **[Payouts](/products/payouts)** — disburse funds directly to customer bank accounts
+- **[Refunds](/products/refunds)** — automate the refund process without manual intervention
+- **[OneAPI Overview](/api/oneapi/overview)** — the recommended path for all new and future integrations

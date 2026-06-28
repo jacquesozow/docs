@@ -1,7 +1,7 @@
 ---
-title: "Pay-in API Overview: Accept Payments with Ozow"
+title: "Pay-in API Overview: Accept EFT Payments with Ozow"
 sidebarTitle: "Overview"
-description: "The Ozow Pay-in API lets you initiate payment requests, redirect customers to the Ozow gateway, and receive transaction outcomes via response and webhooks."
+description: "The Ozow Pay-in API lets you initiate payments, redirect customers to the Ozow gateway, and receive transaction outcomes via redirects and webhooks."
 ---
 
 The Ozow Pay-in API gives you a straightforward way to accept EFT payments from South African customers. You post a payment request to Ozow, redirect your customer to the secure Ozow payment gateway where they complete the transaction through their bank, and then receive the outcome both as a redirect back to your site and as a server-to-server webhook notification. The entire flow is designed around three clear steps that you can wire into any server-side stack with minimal ceremony.
@@ -49,6 +49,6 @@ See the [Authentication](/api/payin/authentication) page for the full field orde
     Understand the redirect and webhook response fields, and verify the response hash.
   </Card>
   <Card title="Transaction Status" icon="magnifying-glass" href="/api/payin/transaction-status">
-    GET /GetTransaction to query real-time payment status before fulfilling an order.
+    GET /GetTransactionStatus to query real-time payment status before fulfilling an order.
   </Card>
 </CardGroup>

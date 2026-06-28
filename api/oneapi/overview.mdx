@@ -1,10 +1,14 @@
 ---
-title: "OneAPI: Ozow's Unified Payment API (Beta)"
+title: "OneAPI: Ozow's Unified Payments API (Beta Overview)"
 sidebarTitle: "Overview"
 description: "Ozow OneAPI is a single REST endpoint for all payment methods — EFT, Cards, Capitec Pay, and more. Uses OAuth 2.0, idempotency, and RESTful design."
 ---
 
 Ozow OneAPI is a single, modern REST API that consolidates every Ozow payment service under one roof. Rather than managing separate integrations for pay-ins, payouts, and verification, you interact with a single endpoint that speaks JSON, respects standard HTTP verbs and status codes, and authenticates via industry-standard OAuth 2.0. Whether you're launching a new integration or migrating an existing one, OneAPI gives you a future-proof foundation that automatically gains access to new payment methods as Ozow rolls them out — no re-integration required.
+
+<Note>
+  **OneAPI is currently in Beta.** Features and endpoints are stable for integration, but the API surface may evolve before general availability. The legacy Ozow APIs (Pay-in, Payouts) will eventually be deprecated — all new features will be introduced in OneAPI only.
+</Note>
 
 ## Supported operations
 
@@ -53,10 +57,6 @@ Uniform field names and data structures, clear and descriptive error responses, 
 ## Prerequisites
 
 Before using OneAPI you must be a registered Ozow merchant with a valid login for the Ozow Dashboard. Use the links in the table above to access the production or staging dashboard. If you need help with merchant registration, contact the Ozow support team at [support@ozow.com](mailto:support@ozow.com).
-
-<Warning>
-  The legacy Ozow APIs (Pay-in, Payouts) will eventually be deprecated. All new features and payment methods will be introduced exclusively in OneAPI. Ozow strongly recommends migrating existing integrations to OneAPI and starting all new integrations here.
-</Warning>
 
 ## Explore OneAPI
 

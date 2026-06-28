@@ -1,17 +1,17 @@
 ---
-title: "GET /GetTransaction — Check Ozow Transaction Status"
+title: "GET /GetTransactionStatus: Check Ozow Payment Status"
 sidebarTitle: "Transaction Status"
-description: "GET /GetTransaction lets you query real-time status for any Ozow transaction. Use it to verify payments before fulfilling orders or processing refunds."
+description: "GET /GetTransactionStatus queries the live status of any Ozow transaction. Use it to verify payments before fulfilling orders or processing refunds."
 ---
 
-The `GET /GetTransaction` endpoint lets you query the current status of any transaction directly from Ozow's servers, using nothing more than your site code, the transaction ID, and your API Key. Because it bypasses the customer's browser entirely, it gives you a tamper-proof, authoritative answer about whether a payment completed — making it the safest way to gate order fulfilment for high-value transactions. Call it after you receive a webhook notification, or use it as a polling fallback if your `NotifyUrl` endpoint was temporarily unavailable.
+The `GET /GetTransactionStatus` endpoint lets you query the current status of any transaction directly from Ozow's servers, using nothing more than your site code, the transaction ID, and your API Key. Because it bypasses the customer's browser entirely, it gives you a tamper-proof, authoritative answer about whether a payment completed — making it the safest way to gate order fulfilment for high-value transactions. Call it after you receive a webhook notification, or use it as a polling fallback if your `NotifyUrl` endpoint was temporarily unavailable.
 
 ## Endpoints
 
 | Environment | URL |
 |-------------|-----|
-| Staging     | `GET https://stagingapi.ozow.com/GetTransaction` |
-| Production  | `GET https://api.ozow.com/GetTransaction` |
+| Staging     | `GET https://stagingapi.ozow.com/GetTransactionStatus` |
+| Production  | `GET https://api.ozow.com/GetTransactionStatus` |
 
 ## Query parameters
 
@@ -40,7 +40,7 @@ The `GET /GetTransaction` endpoint lets you query the current status of any tran
 </ResponseField>
 
 <ResponseField name="Status" type="string">
-  The current status of the transaction: `Complete`, `Cancelled`, `Error`, or `PendingInvestigation`. See the [Payment Response](/api/payin/payment-response#transaction-statuses) page for a full description of each status.
+  The current status of the transaction. Possible values: `Complete`, `Cancelled`, `Error`, or `PendingInvestigation`. See the [Payment Response](/api/payin/payment-response#transaction-statuses) page for a full description of each status.
 </ResponseField>
 
 <ResponseField name="Amount" type="decimal">
@@ -75,7 +75,7 @@ The `GET /GetTransaction` endpoint lets you query the current status of any tran
 
 ```bash
 curl -X GET \
-  'https://api.ozow.com/GetTransaction?siteCode=TST-TST-001&transactionId=abc123&isTest=false' \
+  'https://api.ozow.com/GetTransactionStatus?siteCode=TST-TST-001&transactionId=abc123&isTest=false' \
   -H 'ApiKey: your-api-key'
 ```
 
@@ -84,10 +84,10 @@ Replace `TST-TST-001`, `abc123`, and `your-api-key` with your real site code, th
 ## Best practices
 
 <Note>
-  Ozow recommends calling `GET /GetTransaction` to confirm payment status rather than relying solely on the redirect response or webhook payload. The API response is the authoritative source of truth for a transaction's state.
+  Ozow recommends calling `GET /GetTransactionStatus` to confirm payment status rather than relying solely on the redirect response or webhook payload. The API response is the authoritative source of truth for a transaction's state.
 </Note>
 
 - **After every `NotifyUrl` webhook** — Re-query the transaction via this endpoint before updating your order state. This double-check guards against replayed or spoofed webhook calls.
-- **For high-value transactions** — Use `GET /GetTransaction` as the primary trigger for fulfilment logic rather than the browser redirect, which is vulnerable to the customer closing the tab.
+- **For high-value transactions** — Use `GET /GetTransactionStatus` as the primary trigger for fulfilment logic rather than the browser redirect, which is vulnerable to the customer closing the tab.
 - **When `NotifyUrl` was down** — If your webhook endpoint was temporarily unavailable, poll this endpoint at a sensible interval (e.g. every 30 seconds for up to five minutes) to recover the transaction status.
 - **Before processing refunds** — Confirm the transaction is in `Complete` status via this endpoint before instructing Ozow to issue a refund.

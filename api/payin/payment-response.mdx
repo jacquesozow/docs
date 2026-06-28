@@ -1,5 +1,5 @@
 ---
-title: "Handle Ozow Payment Responses and Redirects"
+title: "Handle Ozow Pay-in Payment Responses and Redirects"
 sidebarTitle: "Payment Response"
 description: "After payment, Ozow redirects the customer to your URL with transaction status fields. Always verify the response hash before marking an order as paid."
 ---
@@ -18,7 +18,7 @@ Once your customer finishes their interaction on the Ozow payment gateway — wh
 ## Response fields
 
 <ResponseField name="TransactionId" type="string">
-  Ozow's unique identifier for this transaction. Store this value — you need it to query the transaction via [GET /GetTransaction](/api/payin/transaction-status).
+  Ozow's unique identifier for this transaction. Store this value — you need it to query the transaction via [GET /GetTransactionStatus](/api/payin/transaction-status).
 </ResponseField>
 
 <ResponseField name="MerchantCode" type="string">
@@ -94,4 +94,4 @@ Ozow signs every response with the same SHA-512 mechanism used for requests. Bef
   Never mark an order as paid, dispatch goods, or credit an account without first verifying that the response `Hash` is valid. Skipping hash verification opens your integration to spoofed payment confirmations.
 </Warning>
 
-For high-value or critical transactions, also confirm the status independently by calling [GET /GetTransaction](/api/payin/transaction-status), which gives you a server-side verification that doesn't rely on the redirect payload.
+For high-value or critical transactions, also confirm the status independently by calling [GET /GetTransactionStatus](/api/payin/transaction-status), which gives you a server-side verification that doesn't rely on the redirect payload.
